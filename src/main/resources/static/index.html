@@ -12,9 +12,34 @@
     </header>
 
     <main>
-<!--        Form di inserimento-->
-        <section class="form-section">
-            <h2>Aggiungi Prodotto </h2>
+<!--        Pulsanti di scelta modalita-->
+        <div class="mode-selector">
+            <button id="btn-visita" class="mode-btn active">Visita Magazzino</button>
+            <button id="btn-aggiungi" class="mode-btn">Aggiungi Prodotto</button>
+        </div>
+<!--        Sezione Visita Magazzino -->
+        <section id="section-visita" class="mode-section">
+            <h2>Magazzino</h2>
+
+<!--            Filtri rapidi-->
+            <div class="filtri-container">
+                <input type="text" id="filtro-testo" placeholder="Cerca per nome, categoria o posizione...">
+                <select id="filtro-categoria">
+                    <option value="">Tutte le categorie</option>
+                    <option value="Elettronica">Elettronica</option>
+                    <option value="Ricambi">Ricambi</option>
+                    <option value="Utensili">Utensili</option>
+                </select>
+                <button id="btn-applica-filtro">Applica</button>
+                <button id="btn-reset-filtro">Reset</button>
+            </div>
+            <div class="products-grid" id="products-container">
+<!--    Qui vanno le cards-->
+            </div>
+        </section>
+<!--    Sezione Aggiungi Prodotto-->
+        <section id="section-aggiungi" class="mode-section" style="display:none;">
+            <h2>Aggiungi Nuovo Prodotto</h2>
             <form id="form-prodotto">
                 <label for="nome">Nome </label>
                 <input type="text" id="nome" required>
@@ -41,25 +66,14 @@
                 <label for="foto">Foto prodotto (opzionale) </label>
                 <input type="file" id="foto" accept="image/*">
 
-                <button type="submit">Aggiungi</button>
+                <button type="submit">Aggiungi al Magazzino</button>
             </form>
-        </section>
-
-<!--        Anteprima foto selezionata-->
-        <div id="preview-foto" class="preview-container">
-            <p>Nessuna foto selezionata </p>
-            <img id="img-preview" alt="Anteprima foto" style="display:none;">
-        </div>
-
-<!--        Tabella dei prodotti-->
-        <section class="lista-section">
-            <h2>Prodotti</h2>
-            <div class="products-grid" id="products-container">
-<!--                JS cards qui-->
+            <div id="preview-foto" class="preview-container">
+                <p></p>
+                <img id="img-preview" alt="Anteprima foto" style="display:none;">
             </div>
         </section>
     </main>
-
     <script src="script.js"></script>
 </body>
 </html>
