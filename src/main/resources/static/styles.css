@@ -1,0 +1,208 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #f5f5f5;
+    color: #222;
+    padding: 16px;
+    line-height: 1.5;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+h1 {
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+}
+
+h2 {
+    font-size: 1.4rem;
+    margin: 24px 0 12px;
+    color: #1a73e8;
+}
+
+.form-section, lista-section {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+label {
+    display: block;
+    margin: 12px 0 4px;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+button {
+    background: #1a73e8;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 1.05rem;
+    margin-top: 16px;
+    cursor: pointer;
+    width: 100%;
+}
+
+button:hover {
+    background: #0d65d6;
+}
+
+.preview-container {
+    text-align: center;
+    margin: 16px 0;
+}
+
+#img-preview {
+    max-width: 100%;
+    max-height: 220px;
+    border-radius: 8px;
+    margin-top: 8px;
+}
+
+@media (max-width: 660px) {
+    body {
+        padding: 12px;
+    }
+    .form-section, .lista-section {
+        padding: 16px;
+    }
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));  /* Responsive: si adatta al device */
+    gap: 20px;  /* Spazio tra cards */
+    margin-top: 16px;
+}
+
+.product-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.card-img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;  /* Mantiene proporzioni, ritaglia se serve */
+    background: #f0f4ff;  /* Placeholder se no foto */
+}
+
+.card-content {
+    padding: 16px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-title {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    color: #1a73e8;
+}
+
+.card-info {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 4px;
+}
+
+.card-price {
+    font-weight: bold;
+    color: #27ae60;
+    margin: 8px 0;
+}
+
+.card-link {
+    margin-top: auto;  /* Spinge il link in basso */
+    display: inline-block;
+    color: #1a73e8;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.card-link:hover {
+    text-decoration: underline;
+}
+
+.card-actions {
+    padding: 12px 16px;
+    border-top: 1px solid #eee;
+    text-align: right;
+}
+
+.card-actions button {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.card-actions button:hover {
+    background: #c0392b;
+}
+
+/* Su mobile: cards a colonna singola se schermo piccolo */
+@media (max-width: 500px) {
+    .products-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

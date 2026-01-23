@@ -18,6 +18,7 @@ public class Prodotto {
     private String categoria;
     private String descrizione;
     private String posizione;
+    private String linkFornitore;
     private String fotoPath;
     public Prodotto() {}
 
@@ -41,6 +42,9 @@ public class Prodotto {
 
     public String getPosizione() {return posizione;}
     public void setPosizione(String posizione) {this.posizione = posizione;}
+
+    public String getLinkFornitore() {return linkFornitore;}
+    public void setinkFornitore(String posizione) {this.linkFornitore = linkFornitore;}
 
     public String getFotoPath() {return fotoPath;}
     public void setFotoPath(String fotoPath) {this.fotoPath = fotoPath;}
