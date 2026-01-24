@@ -229,6 +229,36 @@ button:hover {
     border-radius: 6px;
     border: 1px solid #ccc;
 }
+.qty-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    margin-left: 8px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+}
+
+.qty-btn:hover {
+    background: #2980b9;
+}
+
+.qty-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+    .qty-btn {
+        width: 32px;  /* Un po' più grandi per touch */
+        height: 32px;
+        font-size: 1.3rem;
+    }
+}
 
 
 
