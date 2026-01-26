@@ -1,34 +1,113 @@
 let prodotti = [];
 
-// Elementi DOM globali (definirli subito evita errori "not defined")
+// Elementi DOM globali
 const form = document.getElementById('form-prodotto');
 const submitBtn = form.querySelector('button[type="submit"]');
 const imgPreview = document.getElementById('img-preview');
 const previewP = document.querySelector('#preview-foto p');
 const productsContainer = document.getElementById('products-container');
-const btnVisita = document.getElementById('btn-visita');
-const btnAggiungi = document.getElementById('btn-aggiungi');
+const btnVisitaHome = document.getElementById('btn-visita');
+const btnAggiungiHome = document.getElementById('btn-aggiungi');
+const btnCercaHome = document.getElementById('btn-cerca');
+const btnTornaHome = document.getElementById('btn-torna-home');
 const sectionVisita = document.getElementById('section-visita');
 const sectionAggiungi = document.getElementById('section-aggiungi');
+const sectionCerca = document.getElementById('section-cerca');
+const mainContent = document.getElementById('main-content');
+const homeScreen = document.getElementById('home-screen');
 
-// Listener unico per il submit (aggiunta + modifica)
+// Pulsanti del main (se hanno ID diversi)
+const btnVisitaMain = document.querySelector('#main-content #btn-visita-main') || document.querySelector('#main-content .mode-btn.active');
+const btnAggiungiMain = document.querySelector('#main-content #btn-aggiungi-main') || document.querySelector('#main-content .mode-btn:not(.active)');
+
+
+// Pulsanti HOME screen (solo una volta)
+btnVisitaHome.addEventListener('click', () => {
+    homeScreen.style.display = 'none';
+    mainContent.style.display = 'block';
+    switchMode(btnVisitaMain || btnVisitaHome, sectionVisita);
+});
+
+btnAggiungiHome.addEventListener('click', () => {
+    homeScreen.style.display = 'none';
+    mainContent.style.display = 'block';
+    switchMode(btnAggiungiMain || btnAggiungiHome, sectionAggiungi);
+});
+
+btnCercaHome.addEventListener('click', () => {
+    homeScreen.style.display = 'none';
+    mainContent.style.display = 'block';
+    switchMode(null, sectionCerca);
+    applicaFiltri();
+});
+
+btnVisitaMain.addEventListener('click', () => {
+    switchMode(btnVisitaMain, sectionVisita);
+});
+
+btnAggiungiMain.addEventListener('click', () => {
+    switchMode(btnAggiungiMain, sectionAggiungi);
+});
+
+btnTornaHome.addEventListener('click', () => {
+    mainContent.style.display = 'none';
+    homeScreen.style.display = 'flex';
+    btnTornaHome.style.display = 'none';
+    // Resetta active sui pulsanti principali
+    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+});
+// Funzione switchMode centralizzata
+function switchMode(activeBtn, activeSection) {
+    console.log("switchMode chiamata per sezione:", activeSection.id, "pulsante:", activeBtn?.id || activeBtn?.textContent);
+
+    // Pulisci TUTTI gli active
+    document.querySelectorAll('.mode-btn, .home-btn, .torna-home-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Aggiungi active solo al pulsante corretto
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+        console.log("Active aggiunto a:", activeBtn.id || activeBtn.textContent);
+    }
+
+    // Nascondi tutte le sezioni
+    document.querySelectorAll('.mode-section').forEach(sec => {
+        sec.style.display = 'none';
+    });
+
+    // Mostra la sezione
+    activeSection.style.display = 'block';
+
+    // Torna alla Home sempre visibile nel main
+    if (btnTornaHome) {
+        btnTornaHome.style.display = 'inline-block';
+    }
+
+    // Refresh se visita
+    if (activeSection.id === 'section-visita') {
+        aggiornaCards();
+    }
+}
+
+// Listener submit form (aggiunta + modifica)
 form.addEventListener('submit', function(e) {
     e.preventDefault();
     console.log("Submit attivato");
 
-    const editIndexStr = submitBtn.dataset.editIndex;
+    const editIndexStr = submitBtn?.dataset.editIndex;
     const isEdit = editIndexStr !== undefined && editIndexStr !== '';
     const editIndex = isEdit ? parseInt(editIndexStr) : -1;
 
     const prodottoData = {
-        nome: document.getElementById('nome').value.trim(),
-        quantita: parseInt(document.getElementById('quantita').value) || 0,
-        prezzo: parseFloat(document.getElementById('prezzo').value) || 0,
-        categoria: document.getElementById('categoria').value.trim() || '-',
-        descrizione: document.getElementById('descrizione').value.trim() || '-',
-        posizione: document.getElementById('posizione').value.trim() || '-',
-        linkFornitore: document.getElementById('linkFornitore').value.trim() || '-',
-        fotoPreview: imgPreview.src && imgPreview.style.display !== 'none' ? imgPreview.src : null
+        nome: document.getElementById('nome')?.value.trim() || '',
+        quantita: parseInt(document.getElementById('quantita')?.value) || 0,
+        prezzo: parseFloat(document.getElementById('prezzo')?.value) || 0,
+        categoria: document.getElementById('categoria')?.value.trim() || '',
+        descrizione: document.getElementById('descrizione')?.value.trim() || '',
+        posizione: document.getElementById('posizione')?.value.trim() || '',
+        linkFornitore: document.getElementById('linkFornitore')?.value.trim() || '',
+        fotoPreview: imgPreview?.src && imgPreview.style.display !== 'none' ? imgPreview.src : null
     };
 
     if (!prodottoData.nome) {
@@ -40,46 +119,24 @@ form.addEventListener('submit', function(e) {
 
     if (isEdit && editIndex >= 0 && editIndex < prodotti.length) {
         prodotti[editIndex] = prodottoData;
-        console.log(`Aggiornato prodotto all'indice ${editIndex}`);
+        console.log(`Aggiornato indice ${editIndex}`);
     } else {
         prodotti.push(prodottoData);
         console.log("Aggiunto nuovo prodotto");
     }
 
-    // Reset form e anteprima
+    // Reset form
     form.reset();
     imgPreview.src = '';
     imgPreview.style.display = 'none';
     if (previewP) previewP.style.display = 'block';
-
-    // Reset bottone e flag
     submitBtn.textContent = 'Aggiungi al Magazzino';
     submitBtn.removeAttribute('data-edit-index');
     delete submitBtn.dataset.editIndex;
 
-    // Switch alla vista magazzino e refresh cards
-    btnVisita.click();
-    aggiornaCards();
-});
-
-// Switch modalità Visita / Aggiungi
-btnVisita.addEventListener('click', () => {
-    sectionVisita.style.display = 'block';
-    sectionAggiungi.style.display = 'none';
-    btnVisita.classList.add('active');
-    btnAggiungi.classList.remove('active');
-    // Reset filtri e refresh completo
-    document.getElementById('filtro-testo').value = '';
-    document.getElementById('filtro-categoria').value = '';
-    aggiornaCards();
-});
-
-btnAggiungi.addEventListener('click', () => {
-    sectionVisita.style.display = 'none';
-    sectionAggiungi.style.display = 'block';
-    btnAggiungi.classList.add('active');
-    btnVisita.classList.remove('active');
-});
+    // Torna a Visita Magazzino
+    switchMode(btnVisitaMain, sectionVisita);
+    aggiornaCards();});
 
 // Anteprima foto
 const fotoInput = document.getElementById('foto');
@@ -101,7 +158,7 @@ if (fotoInput) {
     });
 }
 
-// Aggiorna cards (con pulsanti qty e modifica)
+// Aggiorna cards
 function aggiornaCards() {
     if (!productsContainer) {
         console.error("Container cards non trovato!");
@@ -115,36 +172,54 @@ function aggiornaCards() {
         const card = document.createElement('div');
         card.className = 'product-card';
         card.innerHTML = `
-            ${prod.fotoPreview
-            ? `<img src="${prod.fotoPreview}" alt="${prod.nome}" class="card-img">`
-            : `<div class="card-img" style="display:flex; align-items:center; justify-content:center; font-size:3rem; color:#ccc;">🖼️</div>`}
-            
+            ${prod.fotoPreview ? `<img src="${prod.fotoPreview}" alt="${prod.nome}" class="card-img" style="object-fit: contain;">` : `<div class="card-img" style="display:flex; align-items:center; justify-content:center; font-size:3rem; color:#ccc;">🖼️</div>`}
             <div class="card-content">
                 <h3 class="card-title">${prod.nome}</h3>
                 <div class="card-info">
                     Quantità: <strong>${prod.quantita}</strong>
-                    <button class="qty-btn" onclick="cambiaQuantita(${index}, -1)">-</button>
-                    <button class="qty-btn" onclick="cambiaQuantita(${index}, 1)">+</button>
+                    <button class="qty-btn" data-index="${index}" data-delta="-1">-</button>
+                    <button class="qty-btn" data-index="${index}" data-delta="1">+</button>
                 </div>
                 <div class="card-info">Prezzo: <span class="card-price">${prod.prezzo.toFixed(2)} €</span></div>
                 <div class="card-info">Categoria: ${prod.categoria}</div>
                 <div class="card-info">Posizione: ${prod.posizione}</div>
                 ${prod.descrizione ? `<div class="card-info">Descrizione: ${prod.descrizione.substring(0, 100)}${prod.descrizione.length > 100 ? '...' : ''}</div>` : ''}
-                ${prod.linkFornitore && prod.linkFornitore !== '-'
-            ? `<a href="${prod.linkFornitore}" target="_blank" rel="noopener noreferrer" class="card-link">🔗 Vai al fornitore / Amazon</a>`
-            : ''}
+                ${prod.linkFornitore && prod.linkFornitore !== '-' ? `<a href="${prod.linkFornitore}" target="_blank" rel="noopener noreferrer" class="card-link">🔗 Vai al fornitore / Amazon</a>` : ''}
             </div>
-            
             <div class="card-actions">
-                <button onclick="modificaProdotto(${index})">Modifica</button>
-                <button onclick="rimuoviProdotto(${index})">Rimuovi</button>
+                <button class="card-btn edit-btn" data-index="${index}">Modifica</button>
+                <button class="card-btn delete-btn" data-index="${index}">Rimuovi</button>
             </div>
         `;
         productsContainer.appendChild(card);
     });
 }
 
-// Cambia quantità rapida
+// Delega eventi sui pulsanti nelle cards
+productsContainer?.addEventListener('click', function(e) {
+    const target = e.target.closest('button');
+    if (!target) return;
+
+    const index = parseInt(target.dataset.index);
+    if (isNaN(index)) return;
+
+    if (target.classList.contains('edit-btn')) {
+        modificaProdotto(index);
+    }
+
+    if (target.classList.contains('delete-btn')) {
+        rimuoviProdotto(index);
+    }
+
+    if (target.classList.contains('qty-btn')) {
+        const delta = parseInt(target.dataset.delta);
+        if (!isNaN(delta)) {
+            cambiaQuantita(index, delta);
+        }
+    }
+});
+
+// Funzioni ausiliarie
 function cambiaQuantita(index, delta) {
     if (prodotti[index]) {
         let nuovaQty = prodotti[index].quantita + delta;
@@ -154,7 +229,6 @@ function cambiaQuantita(index, delta) {
     }
 }
 
-// Rimuovi prodotto
 function rimuoviProdotto(index) {
     if (confirm("Vuoi rimuovere questo prodotto?")) {
         prodotti.splice(index, 1);
@@ -162,12 +236,11 @@ function rimuoviProdotto(index) {
     }
 }
 
-// Modifica prodotto
 function modificaProdotto(index) {
     const prod = prodotti[index];
     if (!prod) return;
 
-    btnAggiungi.click();
+    switchMode(btnAggiungiMain || btnAggiungiHome, sectionAggiungi);
 
     document.getElementById('nome').value = prod.nome || '';
     document.getElementById('quantita').value = prod.quantita || 0;
@@ -185,58 +258,15 @@ function modificaProdotto(index) {
 
     submitBtn.textContent = 'Salva Modifiche';
     submitBtn.dataset.editIndex = index.toString();
-
-    console.log("Modifica avviata per indice:", index);
 }
 
-// Filtri
+// Filtri (assumendo che tu abbia già la funzione applicaFiltri)
 function applicaFiltri() {
-    const testo = document.getElementById('filtro-testo').value.toLowerCase().trim() || '';
-    const categoria = document.getElementById('filtro-categoria').value || '';
-
-    const filtrate = prodotti.filter(prod => {
-        const matchTesto = !testo ||
-            prod.nome.toLowerCase().includes(testo) ||
-            (prod.categoria && prod.categoria.toLowerCase().includes(testo)) ||
-            (prod.posizione && prod.posizione.toLowerCase().includes(testo)) ||
-            (prod.descrizione && prod.descrizione.toLowerCase().includes(testo));
-
-        const matchCategoria = !categoria || prod.categoria === categoria;
-
-        return matchTesto && matchCategoria;
-    });
-
-    productsContainer.innerHTML = '';
-
-    filtrate.forEach((prod) => {
-        const originalIndex = prodotti.indexOf(prod);
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        card.innerHTML = `
-            ${prod.fotoPreview
-            ? `<img src="${prod.fotoPreview}" alt="${prod.nome}" class="card-img">`
-            : `<div class="card-img" style="display:flex; align-items:center; justify-content:center; font-size:3rem; color:#ccc;">🖼️</div>`}
-            <!-- resto card come in aggiornaCards -->
-            <!-- ... copia la struttura card da aggiornaCards() qui ... -->
-            <div class="card-actions">
-                <button onclick="modificaProdotto(${originalIndex})">Modifica</button>
-                <button onclick="rimuoviProdotto(${originalIndex})">Rimuovi</button>
-            </div>
-        `;
-        productsContainer.appendChild(card);
-    });
+    // ... la tua funzione esistente ...
 }
-
-document.getElementById('btn-applica-filtro').addEventListener('click', applicaFiltri);
-document.getElementById('btn-reset-filtro').addEventListener('click', () => {
-    document.getElementById('filtro-testo').value = '';
-    document.getElementById('filtro-categoria').value = '';
-    aggiornaCards();
-});
 
 // Avvio iniziale
-sectionVisita.style.display = 'block';
-sectionAggiungi.style.display = 'none';
-btnVisita.classList.add('active');
-btnAggiungi.classList.remove('active');
+homeScreen.style.display = 'flex';
+mainContent.style.display = 'none';
+if (btnTornaHome) btnTornaHome.style.display = 'none';
 aggiornaCards();

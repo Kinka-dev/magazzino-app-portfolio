@@ -1,79 +1,100 @@
 <!DOCTYPE html>
 <html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>What's in my Warehouse?</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <header>
-        <h1>What's in my Warehouse? 🤔</h1>
-    </header>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>What's in my Warehouse?</title>
+        <link rel="icon" type="image/x-icon" href="/favicon.ico">
+        <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
+        <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png">
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body>
+        <div id="home-screen" class="home-screen">
+            <div class="home-content">
+                <h1>What's in my<br>Warehouse?</h1>
+                <img src="android-chrome-192x192.png" alt="Logo Magazzino" class="home-logo">
 
-    <main>
-<!--        Pulsanti di scelta modalita-->
-        <div class="mode-selector">
-            <button id="btn-visita" class="mode-btn active">Visita Magazzino</button>
-            <button id="btn-aggiungi" class="mode-btn">Aggiungi Prodotto</button>
+                <div class="home-buttons">
+                    <button id="btn-visita" class="home-btn">Visita Magazzino</button>
+                    <button id="btn-aggiungi" class="home-btn">Aggiungi Prodotto</button>
+                    <button id="btn-cerca" class="home-btn">Cerca in Magazzino</button>
+                </div>
+            </div>
         </div>
-<!--        Sezione Visita Magazzino -->
-        <section id="section-visita" class="mode-section">
-            <h2>Magazzino</h2>
 
-<!--            Filtri rapidi-->
-            <div class="filtri-container">
-                <input type="text" id="filtro-testo" placeholder="Cerca per nome, categoria o posizione...">
-                <select id="filtro-categoria">
-                    <option value="">Tutte le categorie</option>
-                    <option value="Elettronica">Elettronica</option>
-                    <option value="Viti">Viti</option>
-                    <option value="Utensili">Utensili</option>
-                </select>
-                <button id="btn-applica-filtro">Applica</button>
-                <button id="btn-reset-filtro">Reset</button>
+    <!-- Contenuti nascosti inizialmente -->
+        <main id="main-content" style="display: none;">
+            <!-- Pulsanti switch modalità (come prima) -->
+            <div class="mode-selector">
+                <button id="btn-visita-main" class="mode-btn active">Visita Magazzino</button>
+                <button id="btn-aggiungi-main" class="mode-btn">Aggiungi Prodotto</button>
+                <button id="btn-torna-home" class="mode-btn torna-home-btn">Torna alla Home</button>
             </div>
-            <div class="products-grid" id="products-container">
-<!--    Qui vanno le cards-->
-            </div>
-        </section>
-<!--    Sezione Aggiungi Prodotto-->
-        <section id="section-aggiungi" class="mode-section" style="display:none;">
-            <h2>Aggiungi Nuovo Prodotto</h2>
-            <form id="form-prodotto">
-                <label for="nome">Nome </label>
-                <input type="text" id="nome" required>
 
-                <label for="quantita">Quantità </label>
-                <input type="number" id="quantita" min="0" required>
+            <!-- Sezione Visita Magazzino (cards) -->
+            <section id="section-visita" class="mode-section">
+                <h2>Magazzino</h2>
+                <div class="products-grid" id="products-container"></div>
+            </section>
 
-                <label for="prezzo">Prezzo € </label>
-                <input type="number" id="prezzo" step="0.01" min="0">
+            <!-- Sezione Aggiungi Prodotto -->
+            <section id="section-aggiungi" class="mode-section" style="display: none;">
+                <h2>Aggiungi Nuovo Prodotto</h2>
+                <form id="form-prodotto">
+                    <label for="nome">Nome </label>
+                    <input type="text" id="nome" required>
 
-                <label for="categoria">Categoria </label>
-                <input type="text" id="categoria">
+                    <label for="quantita">Quantità </label>
+                    <input type="number" id="quantita" min="0" required>
 
-                <label for="descrizione">Descrizione </label>
-                <textarea id="descrizione" rows="3"></textarea>
+                    <label for="prezzo">Prezzo € </label>
+                    <input type="number" id="prezzo" step="0.01" min="0">
 
-                <label for="posizione">Posizione </label>
-                <input type="text" id="posizione">
+                    <label for="categoria">Categoria </label>
+                    <input type="text" id="categoria">
 
-                <label for="linkFornitore">Link fornitore / Amazon </label>
-                <input type="url" id="linkFornitore" placeholder="https://www.amazon.it/..."
-                       pattern="https?://.*" title="Inserisci un URL valido (http/https)">
+                    <label for="descrizione">Descrizione </label>
+                    <textarea id="descrizione" rows="3"></textarea>
 
-                <label for="foto">Foto prodotto (opzionale) </label>
-                <input type="file" id="foto" accept="image/*">
+                    <label for="posizione">Posizione </label>
+                    <input type="text" id="posizione">
 
-                <button type="submit">Aggiungi al Magazzino</button>
-            </form>
-            <div id="preview-foto" class="preview-container">
-                <p></p>
-                <img id="img-preview" alt="Anteprima foto" style="display:none;">
-            </div>
-        </section>
-    </main>
+                    <label for="linkFornitore">Link fornitore / Amazon </label>
+                    <input type="url" id="linkFornitore" placeholder="https://www.amazon.it/..."
+                                   pattern="https?://.*" title="Inserisci un URL valido (http/https)">
+
+                    <label for="foto">Foto prodotto (opzionale) </label>
+                    <input type="file" id="foto" accept="image/*">
+
+                    <div id="preview-foto" class="preview-container">
+                        <p>Nessuna foto selezionata</p>
+                        <img id="img-preview" alt="Anteprima foto" style="display:none;">
+                    </div>
+                    <button type="submit" class="sub-btn">Aggiungi al Magazzino</button>
+                </form>
+            </section>
+
+            <!-- Sezione Cerca (filtri) -->
+            <section id="section-cerca" class="mode-section" style="display: none;">
+                <h2>Cerca in Magazzino</h2>
+                <div class="filtri-container">
+                    <input type="text" id="filtro-testo" placeholder="Cerca per nome, categoria o posizione...">
+                    <select id="filtro-categoria">
+                        <option value="">Tutte le categorie</option>
+                        <option value="Elettronica">Elettronica</option>
+                        <option value="Viti">Viti</option>
+                        <option value="Utensili">Utensili</option>
+                    </select>
+                    <button id="btn-applica-filtro">Applica Filtro</button>
+                    <button id="btn-reset-filtro">Reset</button>
+                </div>
+                <div class="products-grid" id="products-container-filtered"></div> <!-- cards filtrate qui -->
+            </section>
+        </main>
     <script src="script.js"></script>
-</body>
+    </body>
 </html>
