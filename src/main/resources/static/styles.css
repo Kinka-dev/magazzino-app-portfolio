@@ -196,12 +196,12 @@ button:hover {
 }
 
 .delete-btn {
-    background: #d9534f!important;
+    background: #ff0500 !important;
     font-weight: bold!important;
 }
 
 .delete-btn:hover {
-    background: #c0392b!important;
+    background: #a61001 !important;
     transform: translateY(-2px)!important;
 }
 

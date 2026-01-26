@@ -158,7 +158,6 @@ if (fotoInput) {
     });
 }
 
-// Aggiorna cards
 function aggiornaCards() {
     if (!productsContainer) {
         console.error("Container cards non trovato!");
@@ -195,7 +194,6 @@ function aggiornaCards() {
     });
 }
 
-// Delega eventi sui pulsanti nelle cards
 productsContainer?.addEventListener('click', function(e) {
     const target = e.target.closest('button');
     if (!target) return;
@@ -262,9 +260,74 @@ function modificaProdotto(index) {
 
 // Filtri (assumendo che tu abbia già la funzione applicaFiltri)
 function applicaFiltri() {
-    // ... la tua funzione esistente ...
+    const testo = document.getElementById('filtro-testo').value.toLowerCase().trim() || '';
+    const categoria = document.getElementById('filtro-categoria').value || '';
+
+    console.log("Filtro testo:", testo, "Categoria:", categoria);
+
+    const filtrate = prodotti.filter(prod => {
+        const matchTesto = !testo ||
+            prod.nome.toLowerCase().includes(testo) ||
+            (prod.categoria && prod.categoria.toLowerCase().includes(testo)) ||
+            (prod.posizione && prod.posizione.toLowerCase().includes(testo)) ||
+            (prod.descrizione && prod.descrizione.toLowerCase().includes(testo));
+
+        const matchCategoria = !categoria || prod.categoria === categoria;
+
+        return matchTesto && matchCategoria;
+    });
+
+    console.log("Filtri applicati - prodotti mostrati:", filtrate.length);
+
+    const filteredContainer = document.getElementById('filtered-container');
+    if (!filteredContainer) {
+        console.error("Container #filtered-container non trovato!");
+        return;
+    }
+
+    filteredContainer.innerHTML = '';
+
+    if (filtrate.length === 0) {
+        filteredContainer.innerHTML = '<p style="text-align:center; padding:40px; color:#777;">Nessun prodotto corrisponde ai filtri.</p>';
+        return;
+    }
+
+    filtrate.forEach((prod) => {
+        const originalIndex = prodotti.indexOf(prod);
+
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+            ${prod.fotoPreview ? `<img src="${prod.fotoPreview}" alt="${prod.nome}" class="card-img">` : `<div class="card-img" style="display:flex; align-items:center; justify-content:center; font-size:3rem; color:#ccc;">🖼️</div>`}
+            <div class="card-content">
+                <h3 class="card-title">${prod.nome}</h3>
+                <div class="card-info">
+                    Quantità: <strong>${prod.quantita}</strong>
+                    <button class="qty-btn" data-index="${originalIndex}" data-delta="-1">-</button>
+                    <button class="qty-btn" data-index="${originalIndex}" data-delta="1">+</button>
+                </div>
+                <div class="card-info">Prezzo: <span class="card-price">${prod.prezzo.toFixed(2)} €</span></div>
+                <div class="card-info">Categoria: ${prod.categoria}</div>
+                <div class="card-info">Posizione: ${prod.posizione}</div>
+                ${prod.descrizione ? `<div class="card-info">Descrizione: ${prod.descrizione.substring(0, 100)}${prod.descrizione.length > 100 ? '...' : ''}</div>` : ''}
+                ${prod.linkFornitore && prod.linkFornitore !== '-' ? `<a href="${prod.linkFornitore}" target="_blank" rel="noopener noreferrer" class="card-link">🔗 Vai al fornitore / Amazon</a>` : ''}
+            </div>
+            <div class="card-actions">
+                <button class="card-btn edit-btn" data-index="${originalIndex}">Modifica</button>
+                <button class="card-btn delete-btn" data-index="${originalIndex}">Rimuovi</button>
+            </div>
+        `;
+        filteredContainer.appendChild(card);
+    });
 }
 
+document.getElementById('btn-applica-filtro').addEventListener('click', applicaFiltri);
+
+document.getElementById('btn-reset-filtro').addEventListener('click', () => {
+    document.getElementById('filtro-testo').value = '';
+    document.getElementById('filtro-categoria').value = '';
+    aggiornaCards();
+});
 // Avvio iniziale
 homeScreen.style.display = 'flex';
 mainContent.style.display = 'none';
