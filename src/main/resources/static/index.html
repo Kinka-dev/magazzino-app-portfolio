@@ -32,7 +32,10 @@
             <div class="mode-selector">
                 <button id="btn-visita-main" class="mode-btn active">Visita Magazzino</button>
                 <button id="btn-aggiungi-main" class="mode-btn">Aggiungi Prodotto</button>
-                <button id="btn-torna-home" class="mode-btn torna-home-btn">Torna alla Home</button>
+                <button id="btn-torna-home" class="mode-btn torna-home-btn btn-icon">🏠</button>
+                <button id="btn-filtri-main" class="mode-btn filter-btn btn-icon" title="Cerca / Filtri">
+                    <span class="filter-icon">🔍</span>
+                </button>
             </div>
 
             <!-- Sezione Visita Magazzino (cards) -->
@@ -68,10 +71,15 @@
                                    pattern="https?://.*" title="Inserisci un URL valido (http/https)">
 
                     <label for="foto">Foto prodotto (opzionale) </label>
-                    <input type="file" id="foto" accept="image/*">
+                    <div class="custom-file-upload">
+                        <input type="file" id="foto" accept="image/*" />
+                        <label for="foto" class="custom-file-label">
+                            <span class="file-icon">📷</span> Scegli una foto
+                        </label>
+                    </div>
 
                     <div id="preview-foto" class="preview-container">
-                        <p>Nessuna foto selezionata</p>
+                        <p id="file-status">Nessuna foto selezionata</p>
                         <img id="img-preview" alt="Anteprima foto" style="display:none;">
                     </div>
                     <button type="submit" class="sub-btn">Aggiungi al Magazzino</button>
@@ -89,8 +97,8 @@
                         <option value="Viti">Viti</option>
                         <option value="Utensili">Utensili</option>
                     </select>
-                    <button id="btn-applica-filtro">Applica Filtro</button>
-                    <button id="btn-reset-filtro">Reset</button>
+                    <button id="btn-applica-filtro" style="font-weight: bold">Applica Filtro</button>
+                    <button id="btn-reset-filtro" style="font-weight: bold">Reset</button>
                 </div>
                 <div class="products-grid" id="filtered-container"></div> <!-- cards filtrate qui -->
             </section>

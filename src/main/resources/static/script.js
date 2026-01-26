@@ -56,6 +56,12 @@ btnTornaHome.addEventListener('click', () => {
     // Resetta active sui pulsanti principali
     document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
 });
+
+document.getElementById('btn-filtri-main')?.addEventListener('click', () => {
+    switchMode(document.getElementById('btn-filtri-main'), document.getElementById('section-cerca'));
+    applicaFiltri();
+});
+
 // Funzione switchMode centralizzata
 function switchMode(activeBtn, activeSection) {
     console.log("switchMode chiamata per sezione:", activeSection.id, "pulsante:", activeBtn?.id || activeBtn?.textContent);
@@ -95,7 +101,7 @@ form.addEventListener('submit', function(e) {
     e.preventDefault();
     console.log("Submit attivato");
 
-    const editIndexStr = submitBtn?.dataset.editIndex;
+    const editIndexStr = submitBtn.dataset.editIndex;
     const isEdit = editIndexStr !== undefined && editIndexStr !== '';
     const editIndex = isEdit ? parseInt(editIndexStr) : -1;
 
@@ -140,23 +146,29 @@ form.addEventListener('submit', function(e) {
 
 // Anteprima foto
 const fotoInput = document.getElementById('foto');
-if (fotoInput) {
-    fotoInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                imgPreview.src = ev.target.result;
-                imgPreview.style.display = 'block';
-                if (previewP) previewP.style.display = 'none';
-            };
-            reader.readAsDataURL(file);
-        } else {
-            imgPreview.style.display = 'none';
-            if (previewP) previewP.style.display = 'block';
-        }
-    });
-}
+fotoInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const statusText = document.getElementById('file-status');
+
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            imgPreview.src = ev.target.result;
+            imgPreview.style.display = 'block';
+            if (previewP) previewP.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+
+        // Cambia il testo quando selezioni un file
+        statusText.textContent = `File selezionato: ${file.name}`;
+        statusText.style.color = '#27ae60'; // verde per indicare successo
+    } else {
+        imgPreview.style.display = 'none';
+        if (previewP) previewP.style.display = 'block';
+        statusText.textContent = 'Nessuna foto selezionata';
+        statusText.style.color = '#555';
+    }
+});
 
 function aggiornaCards() {
     if (!productsContainer) {
@@ -171,7 +183,7 @@ function aggiornaCards() {
         const card = document.createElement('div');
         card.className = 'product-card';
         card.innerHTML = `
-            ${prod.fotoPreview ? `<img src="${prod.fotoPreview}" alt="${prod.nome}" class="card-img" style="object-fit: contain;">` : `<div class="card-img" style="display:flex; align-items:center; justify-content:center; font-size:3rem; color:#ccc;">🖼️</div>`}
+            ${prod.fotoPreview ? `<img src="${prod.fotoPreview}" alt="${prod.nome}" class="card-img">` : `<div class="card-img" style="display:flex; align-items:center; justify-content:center; font-size:3rem; color:#ccc;">🖼️</div>`}
             <div class="card-content">
                 <h3 class="card-title">${prod.nome}</h3>
                 <div class="card-info">

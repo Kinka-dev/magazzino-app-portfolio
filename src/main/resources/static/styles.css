@@ -126,6 +126,9 @@ button:hover {
 .preview-container {
     text-align: center;
     margin: 16px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #img-preview {
@@ -133,12 +136,14 @@ button:hover {
     max-height: 220px;
     border-radius: 8px;
     margin-top: 8px;
+    align-content: center;
 }
 
 .card-title {
     font-size: 1.2rem;
     margin-bottom: 8px;
     color: #1a73e8;
+    text-align: center;
 }
 
 .card-info {
@@ -217,13 +222,7 @@ button:hover {
     }
 }
 
-.mode-selector {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    gap: 12px;
-    margin-bottom: 24px;
-}
+
 
 .mode-btn {
     padding: 12px 24px;
@@ -321,7 +320,6 @@ header,
     margin: 24px auto;           /* centra */
 }
 
-/* Contenitore principale – limita larghezza e centra */
 main,
 #section-visita {
     max-width: 1280px;
@@ -331,7 +329,6 @@ main,
     box-sizing: border-box;
 }
 
-/* Griglia cards – MOBILE FIRST + FORZA SU DESKTOP */
 .products-grid {
     display: grid;
     grid-template-columns: 1fr;               /* default: 1 colonna (mobile) */
@@ -339,7 +336,6 @@ main,
     margin: 32px 0;
 }
 
-/* Schermi > 600px: inizia a usare auto-fill con larghezza minima */
 @media (min-width: 601px) {
     .products-grid {
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -347,7 +343,6 @@ main,
     }
 }
 
-/* Schermi > 900px: più spazio, colonne più larghe */
 @media (min-width: 901px) {
     .products-grid {
         grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -355,7 +350,6 @@ main,
     }
 }
 
-/* Schermi > 1200px: desktop largo, 3-4 colonne */
 @media (min-width: 1201px) {
     .products-grid {
         grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -363,7 +357,6 @@ main,
     }
 }
 
-/* Card singola – proporzionata e flessibile */
 .product-card {
     background: white;
     border-radius: 12px;
@@ -385,7 +378,9 @@ main,
 .card-img {
     width: 100%;
     height: 220px;
-    object-fit: cover;
+    border-radius: 8px!important;
+    object-fit: contain;
+    margin-top: 30px;
 }
 
 .card-content {
@@ -403,4 +398,61 @@ main,
     font-weight: bold;
 }
 
+.custom-file-upload {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /*margin: 12px 0;*/
+}
+
+.custom-file-upload input[type="file"] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.custom-file-label {
+    display: flex;
+    color: black;
+    margin-top: 5px;
+    border-radius: 6px;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    text-align: center;
+    /*min-width: 200px;*/
+}
+
+.custom-file-label .file-icon {
+    margin-right: 8px;
+    font-size: 1.2rem;
+}
+
+/* Testo "Nessuna foto selezionata" */
+#file-status {
+    color: #555;
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+.mode-selector {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.btn-icon {
+    font-size: 1.4rem;
+}
 
