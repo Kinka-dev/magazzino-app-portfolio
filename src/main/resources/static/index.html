@@ -10,6 +10,7 @@
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
         <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
         <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="styles.css">
     </head>
     <body>
@@ -49,26 +50,46 @@
                 <h2>Aggiungi Nuovo Prodotto</h2>
                 <form id="form-prodotto">
                     <label for="nome">Nome </label>
-                    <input type="text" id="nome" required>
-
+                    <div class="form-btns">
+                        <input type="text" id="nome" required>
+                        <button type="button" class="mic-btn" id="mic-nome" title="Dettatura vocale">🎤</button>
+                    </div>
                     <label for="quantita">Quantità </label>
-                    <input type="number" id="quantita" min="0" required>
+                    <div class="form-btns">
+                        <input type="number" id="quantita" min="0" required>
+                        <button type="button" class="mic-btn" id="mic-quantita" title="Dettatura vocale">🎤</button>
+                    </div>
 
                     <label for="prezzo">Prezzo € </label>
-                    <input type="number" id="prezzo" step="0.01" min="0">
+                    <div class="form-btns">
+                        <input type="number" id="prezzo" step="0.01" min="0">
+                        <button type="button" class="mic-btn" id="mic-prezzo" title="Dettatura vocale">🎤</button>
+                    </div>
 
                     <label for="categoria">Categoria </label>
-                    <input type="text" id="categoria">
+                    <div class="form-btns">
+                        <input type="text" id="categoria">
+                        <button type="button" class="mic-btn" id="mic-categoria" title="Dettatura vocale">🎤</button>
+                    </div>
 
                     <label for="descrizione">Descrizione </label>
-                    <textarea id="descrizione" rows="3"></textarea>
+                    <div class="form-btns">
+                        <textarea id="descrizione" rows="3"></textarea>
+                        <button type="button" class="mic-btn" id="mic-descrizione" title="Dettatura vocale">🎤</button>
+                    </div>
 
                     <label for="posizione">Posizione </label>
-                    <input type="text" id="posizione">
+                    <div class="form-btns">
+                        <input type="text" id="posizione">
+                        <button type="button" class="mic-btn" id="mic-posizione" title="Dettatura vocale">🎤</button>
+                    </div>
 
                     <label for="linkFornitore">Link fornitore / Amazon </label>
-                    <input type="url" id="linkFornitore" placeholder="https://www.amazon.it/..."
-                                   pattern="https?://.*" title="Inserisci un URL valido (http/https)">
+                    <div class="form-btns">
+                        <input type="url" id="linkFornitore" placeholder="https://www.amazon.it/..."
+                               pattern="https?://.*" title="Inserisci un URL valido (http/https)">
+                        <button type="button" class="mic-btn" id="mic-linkFornitore" title="Dettatura vocale">🎤</button>
+                    </div>
 
                     <label for="foto">Foto prodotto (opzionale) </label>
                     <div class="custom-file-upload">
@@ -82,7 +103,10 @@
                         <p id="file-status">Nessuna foto selezionata</p>
                         <img id="img-preview" alt="Anteprima foto" style="display:none;">
                     </div>
-                    <button type="submit" class="sub-btn">Aggiungi al Magazzino</button>
+                    <div class="form-actions">
+                        <button type="submit" class="sub-btn">Salva e Visita Magazzino</button>
+                        <button type="button" id="save-and-new-btn">Salva e Aggiungi Nuovo</button>
+                    </div>
                 </form>
             </section>
 

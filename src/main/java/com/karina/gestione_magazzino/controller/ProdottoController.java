@@ -17,6 +17,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/prodotti")
+@CrossOrigin(origins = {"http://localhost:8080", "http://192.168.0.170:8080", "*"})
 public class ProdottoController {
 
     @Autowired
@@ -25,7 +26,6 @@ public class ProdottoController {
     @Autowired
     private ProdottoRepository repository;
 
-    // PERCORSO ASSOLUTO – crea questa cartella manualmente!
     private final String uploadDir = "uploads-magazzino/";
 
     @GetMapping

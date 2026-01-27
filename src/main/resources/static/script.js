@@ -16,6 +16,7 @@ const homeScreen = document.getElementById('home-screen');
 const btnVisitaMain = document.querySelector('#main-content #btn-visita-main') || document.querySelector('#main-content .mode-btn.active');
 const btnAggiungiMain = document.querySelector('#main-content #btn-aggiungi-main') || document.querySelector('#main-content .mode-btn:not(.active)');
 const filteredContainer = document.getElementById('filtered-container')
+const API_BASE_URL = 'http://192.168.0.170:8080';
 
 btnVisitaHome.addEventListener('click', () => {
     homeScreen.style.display = 'none';
@@ -107,7 +108,7 @@ form.addEventListener('submit', async function(e) {
     submitBtn.textContent = 'Salvataggio...';
 
     try {
-        let url = 'http://localhost:8080/api/prodotti';
+        let url = `${API_BASE_URL}/api/prodotti`;
         let method = 'POST';
 
         const editId = submitBtn.dataset.editId;
@@ -185,7 +186,7 @@ async function aggiornaCards() {
     }
 
     try {
-        const response = await fetch('http://localhost:8080/api/prodotti');
+        const response = await fetch(`${API_BASE_URL}/api/prodotti`);
         if (!response.ok) throw new Error("Errore caricamento");
         const data = await response.json();
 
@@ -200,6 +201,7 @@ async function aggiornaCards() {
                 : `<div class="card-img" style="display:flex;align-items:center;justify-content:center;font-size:3rem;color:#ccc;">🖼️</div>`}
                 <div class="card-content">
                     <h3 class="card-title">${prod.nome}</h3>
+
                     <div class="card-info">
                         Quantità: <strong>${prod.quantita}</strong>
                         <button class="qty-btn" data-id="${prod.id}" data-delta="-1">-</button>
@@ -256,7 +258,7 @@ productsContainer.addEventListener('click', async function(e) {
 
 async function cambiaQuantita(id, delta) {
     try {
-        const getResp = await fetch(`http://localhost:8080/api/prodotti/${id}`);
+        const getResp = await fetch(`${API_BASE_URL}/api/prodotti/${id}`);
         if (!getResp.ok) throw new Error("Prodotto non trovato");
         const prod = await getResp.json();
 
@@ -264,7 +266,7 @@ async function cambiaQuantita(id, delta) {
 
         const updated = { ...prod, quantita: nuovaQuantita };
 
-        const putResp = await fetch(`http://localhost:8080/api/prodotti/${id}`, {
+        const putResp = await fetch(`${API_BASE_URL}/api/prodotti/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updated)
@@ -287,11 +289,11 @@ async function rimuoviProdotto(id) {
     if (!confirm("Vuoi rimuovere questo prodotto?")) return;
 
     try {
-        const response = await fetch(`http://localhost:8080/api/prodotti/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/prodotti/${id}`, {
             method: 'DELETE'
         });
 
-        if (putResp.ok) {
+        if (response.ok) {
             if (document.getElementById('section-cerca').style.display === 'block') {
                 await applicaFiltri();  // ricarica filtri
             } else {
@@ -306,7 +308,7 @@ async function rimuoviProdotto(id) {
 
 async function modificaProdotto(id) {
     try {
-        const response = await fetch(`http://localhost:8080/api/prodotti/${id}`);
+        const response = await fetch(`${API_BASE_URL}/api/prodotti/${id}`);
         if (!response.ok) throw new Error("Prodotto non trovato");
         const prod = await response.json();
 
@@ -347,7 +349,7 @@ async function applicaFiltri() {
     const categoria = categoriaSelect.value.trim() || '';  // trim anche qui
 
     try {
-        const response = await fetch('http://localhost:8080/api/prodotti');
+        const response = await fetch(`${API_BASE_URL}/api/prodotti`);
         if (!response.ok) throw new Error(`Errore server: ${response.status}`);
         const allProdotti = await response.json();
 
@@ -457,3 +459,41 @@ homeScreen.style.display = 'flex';
 mainContent.style.display = 'none';
 if (btnTornaHome) btnTornaHome.style.display = 'none';
 aggiornaCards();
+
+function startDictation(inputId) {
+    if (!('webkitSpeechRecognition' in window)) {
+        alert("Dettatura vocale non supportata dal tuo browser");
+        return;
+    }
+
+    const recognition = new webkitSpeechRecognition();
+    recognition.lang = 'it-IT';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    const micBtn = document.getElementById(`mic-${inputId.split('-')[1] || inputId}`);
+    micBtn.classList.add('listening');
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById(inputId).value = transcript;
+        micBtn.classList.remove('listening');
+    };
+
+    recognition.onerror = (event) => {
+        console.error("Errore dettatura:", event.error);
+        micBtn.classList.remove('listening');
+    };
+
+    recognition.onend = () => micBtn.classList.remove('listening');
+    recognition.start();
+}
+
+document.getElementById('mic-nome').addEventListener('click', () => startDictation('nome'));
+document.getElementById('mic-quantita').addEventListener('click', () => startDictation('quantita'));
+document.getElementById('mic-prezzo').addEventListener('click', () => startDictation('prezzo'));
+document.getElementById('mic-categoria').addEventListener('click', () => startDictation('categoria'));
+document.getElementById('mic-descrizione').addEventListener('click', () => startDictation('descrizione'));
+document.getElementById('mic-posizione').addEventListener('click', () => startDictation('posizione'));
+document.getElementById('mic-linkFornitore').addEventListener('click', () => startDictation('linkFornitore'));
+
