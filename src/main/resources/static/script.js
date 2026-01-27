@@ -1,5 +1,3 @@
-let prodotti = [];
-
 // Elementi DOM globali
 const form = document.getElementById('form-prodotto');
 const submitBtn = form.querySelector('button[type="submit"]');
@@ -15,77 +13,60 @@ const sectionAggiungi = document.getElementById('section-aggiungi');
 const sectionCerca = document.getElementById('section-cerca');
 const mainContent = document.getElementById('main-content');
 const homeScreen = document.getElementById('home-screen');
-
-// Pulsanti del main (se hanno ID diversi)
 const btnVisitaMain = document.querySelector('#main-content #btn-visita-main') || document.querySelector('#main-content .mode-btn.active');
 const btnAggiungiMain = document.querySelector('#main-content #btn-aggiungi-main') || document.querySelector('#main-content .mode-btn:not(.active)');
+const filteredContainer = document.getElementById('filtered-container')
 
-
-// Pulsanti HOME screen (solo una volta)
 btnVisitaHome.addEventListener('click', () => {
     homeScreen.style.display = 'none';
     mainContent.style.display = 'block';
     switchMode(btnVisitaMain || btnVisitaHome, sectionVisita);
 });
-
 btnAggiungiHome.addEventListener('click', () => {
     homeScreen.style.display = 'none';
     mainContent.style.display = 'block';
     switchMode(btnAggiungiMain || btnAggiungiHome, sectionAggiungi);
 });
-
 btnCercaHome.addEventListener('click', () => {
     homeScreen.style.display = 'none';
     mainContent.style.display = 'block';
     switchMode(null, sectionCerca);
     applicaFiltri();
 });
-
 btnVisitaMain.addEventListener('click', () => {
     switchMode(btnVisitaMain, sectionVisita);
 });
-
 btnAggiungiMain.addEventListener('click', () => {
     switchMode(btnAggiungiMain, sectionAggiungi);
 });
-
 btnTornaHome.addEventListener('click', () => {
     mainContent.style.display = 'none';
     homeScreen.style.display = 'flex';
     btnTornaHome.style.display = 'none';
-    // Resetta active sui pulsanti principali
     document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
 });
 
-document.getElementById('btn-filtri-main')?.addEventListener('click', () => {
+document.getElementById('btn-filtri-main').addEventListener('click', () => {
     switchMode(document.getElementById('btn-filtri-main'), document.getElementById('section-cerca'));
     applicaFiltri();
 });
 
-// Funzione switchMode centralizzata
 function switchMode(activeBtn, activeSection) {
     console.log("switchMode chiamata per sezione:", activeSection.id, "pulsante:", activeBtn?.id || activeBtn?.textContent);
 
-    // Pulisci TUTTI gli active
     document.querySelectorAll('.mode-btn, .home-btn, .torna-home-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-
-    // Aggiungi active solo al pulsante corretto
     if (activeBtn) {
         activeBtn.classList.add('active');
         console.log("Active aggiunto a:", activeBtn.id || activeBtn.textContent);
     }
-
-    // Nascondi tutte le sezioni
     document.querySelectorAll('.mode-section').forEach(sec => {
         sec.style.display = 'none';
     });
 
-    // Mostra la sezione
     activeSection.style.display = 'block';
 
-    // Torna alla Home sempre visibile nel main
     if (btnTornaHome) {
         btnTornaHome.style.display = 'inline-block';
     }
@@ -96,55 +77,83 @@ function switchMode(activeBtn, activeSection) {
     }
 }
 
-// Listener submit form (aggiunta + modifica)
-form.addEventListener('submit', function(e) {
+form.addEventListener('submit', async function(e) {
     e.preventDefault();
-    console.log("Submit attivato");
 
-    const editIndexStr = submitBtn.dataset.editIndex;
-    const isEdit = editIndexStr !== undefined && editIndexStr !== '';
-    const editIndex = isEdit ? parseInt(editIndexStr) : -1;
-
-    const prodottoData = {
-        nome: document.getElementById('nome')?.value.trim() || '',
-        quantita: parseInt(document.getElementById('quantita')?.value) || 0,
-        prezzo: parseFloat(document.getElementById('prezzo')?.value) || 0,
-        categoria: document.getElementById('categoria')?.value.trim() || '',
-        descrizione: document.getElementById('descrizione')?.value.trim() || '',
-        posizione: document.getElementById('posizione')?.value.trim() || '',
-        linkFornitore: document.getElementById('linkFornitore')?.value.trim() || '',
-        fotoPreview: imgPreview?.src && imgPreview.style.display !== 'none' ? imgPreview.src : null
-    };
-
-    if (!prodottoData.nome) {
+    const nome = document.getElementById('nome').value.trim() || '';
+    if (!nome) {
         alert("Inserisci almeno il nome del prodotto!");
         return;
     }
 
+    const fotoBase64 = imgPreview?.src && imgPreview.style.display !== 'none'
+        ? imgPreview.src
+        : null;
+
+    const prodottoData = {
+        nome: nome,
+        quantita: parseInt(document.getElementById('quantita')?.value) || 0,
+        prezzo: parseFloat(document.getElementById('prezzo')?.value) || 0,
+        categoria: document.getElementById('categoria')?.value?.trim() || '-',
+        descrizione: document.getElementById('descrizione')?.value?.trim() || '-',
+        posizione: document.getElementById('posizione')?.value?.trim() || '-',
+        linkFornitore: document.getElementById('linkFornitore')?.value?.trim() || '',
+        fotoBase64: fotoBase64
+    };
+
     if (prodottoData.quantita < 0) prodottoData.quantita = 0;
 
-    if (isEdit && editIndex >= 0 && editIndex < prodotti.length) {
-        prodotti[editIndex] = prodottoData;
-        console.log(`Aggiornato indice ${editIndex}`);
-    } else {
-        prodotti.push(prodottoData);
-        console.log("Aggiunto nuovo prodotto");
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Salvataggio...';
+
+    try {
+        let url = 'http://localhost:8080/api/prodotti';
+        let method = 'POST';
+
+        const editId = submitBtn.dataset.editId;
+        if (editId) {
+            url += `/${editId}`;
+            method = 'PUT';
+        }
+
+        const response = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(prodottoData)
+        });
+
+        if (response.ok) {
+            if (document.getElementById('section-cerca').style.display === 'block') {
+                await applicaFiltri();  // ricarica filtri
+            } else {
+                await aggiornaCards();
+            }
+            form.reset();
+            imgPreview.src = '';
+            imgPreview.style.display = 'none';
+            if (previewP) previewP.style.display = 'block';
+
+            submitBtn.textContent = 'Aggiungi al Magazzino';
+            submitBtn.disabled = false;
+            submitBtn.removeAttribute('data-edit-id');
+            delete submitBtn.dataset.editId;
+
+            switchMode(btnVisitaMain, sectionVisita);
+            await aggiornaCards();
+        } else {
+            const errorText = await response.text();
+            alert("Errore salvataggio: " + errorText);
+            submitBtn.textContent = editId ? 'Salva Modifiche' : 'Aggiungi al Magazzino';
+            submitBtn.disabled = false;
+        }
+    } catch (error) {
+        console.error("Errore:", error);
+        alert("Errore connessione al server");
+        submitBtn.textContent = 'Aggiungi al Magazzino';
+        submitBtn.disabled = false;
     }
+});
 
-    // Reset form
-    form.reset();
-    imgPreview.src = '';
-    imgPreview.style.display = 'none';
-    if (previewP) previewP.style.display = 'block';
-    submitBtn.textContent = 'Aggiungi al Magazzino';
-    submitBtn.removeAttribute('data-edit-index');
-    delete submitBtn.dataset.editIndex;
-
-    // Torna a Visita Magazzino
-    switchMode(btnVisitaMain, sectionVisita);
-    aggiornaCards();});
-
-// Anteprima foto
 const fotoInput = document.getElementById('foto');
 fotoInput.addEventListener('change', function(e) {
     const file = e.target.files[0];
@@ -159,7 +168,6 @@ fotoInput.addEventListener('change', function(e) {
         };
         reader.readAsDataURL(file);
 
-        // Cambia il testo quando selezioni un file
         statusText.textContent = `File selezionato: ${file.name}`;
         statusText.style.color = '#27ae60'; // verde per indicare successo
     } else {
@@ -170,177 +178,281 @@ fotoInput.addEventListener('change', function(e) {
     }
 });
 
-function aggiornaCards() {
+async function aggiornaCards() {
     if (!productsContainer) {
-        console.error("Container cards non trovato!");
+        console.error("Container non trovato");
         return;
     }
 
-    productsContainer.innerHTML = '';
-    console.log("Aggiornamento cards - totale prodotti:", prodotti.length);
+    try {
+        const response = await fetch('http://localhost:8080/api/prodotti');
+        if (!response.ok) throw new Error("Errore caricamento");
+        const data = await response.json();
 
-    prodotti.forEach((prod, index) => {
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        card.innerHTML = `
-            ${prod.fotoPreview ? `<img src="${prod.fotoPreview}" alt="${prod.nome}" class="card-img">` : `<div class="card-img" style="display:flex; align-items:center; justify-content:center; font-size:3rem; color:#ccc;">🖼️</div>`}
-            <div class="card-content">
-                <h3 class="card-title">${prod.nome}</h3>
-                <div class="card-info">
-                    Quantità: <strong>${prod.quantita}</strong>
-                    <button class="qty-btn" data-index="${index}" data-delta="-1">-</button>
-                    <button class="qty-btn" data-index="${index}" data-delta="1">+</button>
+        productsContainer.innerHTML = '';
+
+        data.forEach(prod => {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.innerHTML = `
+                ${prod.fotoBase64
+                ? `<img src="${prod.fotoBase64}" alt="${prod.nome}" class="card-img">`
+                : `<div class="card-img" style="display:flex;align-items:center;justify-content:center;font-size:3rem;color:#ccc;">🖼️</div>`}
+                <div class="card-content">
+                    <h3 class="card-title">${prod.nome}</h3>
+                    <div class="card-info">
+                        Quantità: <strong>${prod.quantita}</strong>
+                        <button class="qty-btn" data-id="${prod.id}" data-delta="-1">-</button>
+                        <button class="qty-btn" data-id="${prod.id}" data-delta="1">+</button>
+                    </div>
+                    <div class="card-info">Prezzo: <span class="card-price">${prod.prezzo.toFixed(2)} €</span></div>
+                    <div class="card-info">Categoria: ${prod.categoria}</div>
+                    <div class="card-info">Posizione: ${prod.posizione}</div>
+                    ${prod.descrizione ? `<div class="card-info">Descrizione: ${prod.descrizione.substring(0, 100)}${prod.descrizione.length > 100 ? '...' : ''}</div>` : ''}
+                    ${prod.linkFornitore && prod.linkFornitore !== '-' ? `<a href="${prod.linkFornitore}" target="_blank" rel="noopener noreferrer" class="card-link">🔗 Vai al fornitore / Amazon</a>` : ''}
                 </div>
-                <div class="card-info">Prezzo: <span class="card-price">${prod.prezzo.toFixed(2)} €</span></div>
-                <div class="card-info">Categoria: ${prod.categoria}</div>
-                <div class="card-info">Posizione: ${prod.posizione}</div>
-                ${prod.descrizione ? `<div class="card-info">Descrizione: ${prod.descrizione.substring(0, 100)}${prod.descrizione.length > 100 ? '...' : ''}</div>` : ''}
-                ${prod.linkFornitore && prod.linkFornitore !== '-' ? `<a href="${prod.linkFornitore}" target="_blank" rel="noopener noreferrer" class="card-link">🔗 Vai al fornitore / Amazon</a>` : ''}
-            </div>
-            <div class="card-actions">
-                <button class="card-btn edit-btn" data-index="${index}">Modifica</button>
-                <button class="card-btn delete-btn" data-index="${index}">Rimuovi</button>
-            </div>
-        `;
-        productsContainer.appendChild(card);
-    });
+
+                <div class="card-actions">
+                    <button class="card-btn edit-btn" data-id="${prod.id}">Modifica</button>
+                    <button class="card-btn delete-btn" data-id="${prod.id}">Rimuovi</button>
+                </div>
+            `;
+            productsContainer.appendChild(card);
+        });
+    } catch (error) {
+        console.error("Errore fetch prodotti:", error);
+        productsContainer.innerHTML = '<p style="color:red; text-align:center;">Errore caricamento prodotti</p>';
+    }
 }
 
-productsContainer?.addEventListener('click', function(e) {
-    const target = e.target.closest('button');
-    if (!target) return;
+productsContainer.addEventListener('click', async function(e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
 
-    const index = parseInt(target.dataset.index);
-    if (isNaN(index)) return;
-
-    if (target.classList.contains('edit-btn')) {
-        modificaProdotto(index);
+    const id = btn.dataset.id;  // o data-id
+    if (!id) {
+        console.warn("Nessun data-id sul pulsante:", btn);
+        return;
     }
 
-    if (target.classList.contains('delete-btn')) {
-        rimuoviProdotto(index);
+    if (btn.classList.contains('edit-btn')) {
+        console.log("Modifica cliccato per ID:", id);
+        await modificaProdotto(id);
     }
 
-    if (target.classList.contains('qty-btn')) {
-        const delta = parseInt(target.dataset.delta);
+    if (btn.classList.contains('delete-btn')) {
+        console.log("Rimuovi cliccato per ID:", id);
+        await rimuoviProdotto(id);
+    }
+
+    if (btn.classList.contains('qty-btn')) {
+        const delta = parseInt(btn.dataset.delta);
         if (!isNaN(delta)) {
-            cambiaQuantita(index, delta);
+            console.log("Quantità cambiata:", delta, "per ID:", id);
+            await cambiaQuantita(id, delta);
         }
     }
 });
 
-// Funzioni ausiliarie
-function cambiaQuantita(index, delta) {
-    if (prodotti[index]) {
-        let nuovaQty = prodotti[index].quantita + delta;
-        if (nuovaQty < 0) nuovaQty = 0;
-        prodotti[index].quantita = nuovaQty;
-        aggiornaCards();
+async function cambiaQuantita(id, delta) {
+    try {
+        const getResp = await fetch(`http://localhost:8080/api/prodotti/${id}`);
+        if (!getResp.ok) throw new Error("Prodotto non trovato");
+        const prod = await getResp.json();
+
+        const nuovaQuantita = Math.max(0, prod.quantita + delta);
+
+        const updated = { ...prod, quantita: nuovaQuantita };
+
+        const putResp = await fetch(`http://localhost:8080/api/prodotti/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updated)
+        });
+
+        if (putResp.ok) {
+            if (document.getElementById('section-cerca').style.display === 'block') {
+                await applicaFiltri();  // ricarica filtri
+            } else {
+                await aggiornaCards();
+            }
+        }
+    } catch (error) {
+        console.error("Errore quantità:", error);
+        alert("Impossibile aggiornare quantità");
     }
 }
 
-function rimuoviProdotto(index) {
-    if (confirm("Vuoi rimuovere questo prodotto?")) {
-        prodotti.splice(index, 1);
-        aggiornaCards();
+async function rimuoviProdotto(id) {
+    if (!confirm("Vuoi rimuovere questo prodotto?")) return;
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/prodotti/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (putResp.ok) {
+            if (document.getElementById('section-cerca').style.display === 'block') {
+                await applicaFiltri();  // ricarica filtri
+            } else {
+                await aggiornaCards();
+            }
+        }
+    } catch (error) {
+        console.error("Errore DELETE:", error);
+        alert("Errore connessione al server");
     }
 }
 
-function modificaProdotto(index) {
-    const prod = prodotti[index];
-    if (!prod) return;
+async function modificaProdotto(id) {
+    try {
+        const response = await fetch(`http://localhost:8080/api/prodotti/${id}`);
+        if (!response.ok) throw new Error("Prodotto non trovato");
+        const prod = await response.json();
 
-    switchMode(btnAggiungiMain || btnAggiungiHome, sectionAggiungi);
+        switchMode(btnAggiungiMain, sectionAggiungi);
 
-    document.getElementById('nome').value = prod.nome || '';
-    document.getElementById('quantita').value = prod.quantita || 0;
-    document.getElementById('prezzo').value = prod.prezzo || 0;
-    document.getElementById('categoria').value = prod.categoria || '';
-    document.getElementById('descrizione').value = prod.descrizione || '';
-    document.getElementById('posizione').value = prod.posizione || '';
-    document.getElementById('linkFornitore').value = prod.linkFornitore || '';
+        document.getElementById('nome').value = prod.nome || '';
+        document.getElementById('quantita').value = prod.quantita || 0;
+        document.getElementById('prezzo').value = prod.prezzo || 0;
+        document.getElementById('categoria').value = prod.categoria || '';
+        document.getElementById('descrizione').value = prod.descrizione || '';
+        document.getElementById('posizione').value = prod.posizione || '';
+        document.getElementById('linkFornitore').value = prod.linkFornitore || '';
 
-    if (prod.fotoPreview) {
-        imgPreview.src = prod.fotoPreview;
-        imgPreview.style.display = 'block';
-        if (previewP) previewP.style.display = 'none';
+        // Anteprima foto dal backend (base64)
+        if (prod.fotoBase64) {
+            imgPreview.src = prod.fotoBase64;
+            imgPreview.style.display = 'block';
+            if (previewP) previewP.style.display = 'none';
+        } else {
+            imgPreview.src = '';
+            imgPreview.style.display = 'none';
+            if (previewP) previewP.style.display = 'block';
+        }
+
+        submitBtn.textContent = 'Salva Modifiche';
+        submitBtn.dataset.editId = id;
+    } catch (error) {
+        console.error("Errore caricamento modifica:", error);
+        alert("Impossibile caricare il prodotto per la modifica");
     }
-
-    submitBtn.textContent = 'Salva Modifiche';
-    submitBtn.dataset.editIndex = index.toString();
 }
 
-// Filtri (assumendo che tu abbia già la funzione applicaFiltri)
-function applicaFiltri() {
-    const testo = document.getElementById('filtro-testo').value.toLowerCase().trim() || '';
-    const categoria = document.getElementById('filtro-categoria').value || '';
+async function applicaFiltri() {
+    const testoInput = document.getElementById('filtro-testo');
+    const categoriaSelect = document.getElementById('filtro-categoria');
 
-    console.log("Filtro testo:", testo, "Categoria:", categoria);
+    const testo = testoInput.value.toLowerCase().trim() || '';
+    const categoria = categoriaSelect.value.trim() || '';  // trim anche qui
 
-    const filtrate = prodotti.filter(prod => {
-        const matchTesto = !testo ||
-            prod.nome.toLowerCase().includes(testo) ||
-            (prod.categoria && prod.categoria.toLowerCase().includes(testo)) ||
-            (prod.posizione && prod.posizione.toLowerCase().includes(testo)) ||
-            (prod.descrizione && prod.descrizione.toLowerCase().includes(testo));
+    try {
+        const response = await fetch('http://localhost:8080/api/prodotti');
+        if (!response.ok) throw new Error(`Errore server: ${response.status}`);
+        const allProdotti = await response.json();
 
-        const matchCategoria = !categoria || prod.categoria === categoria;
+        console.log("Prodotti totali dal backend:", allProdotti.length);
+        console.log("Esempi categorie nel DB:", allProdotti.map(p => p.categoria));
 
-        return matchTesto && matchCategoria;
-    });
+        const filtrate = allProdotti.filter(prod => {
+            const matchTesto = !testo ||
+                (prod.nome && prod.nome.toLowerCase().includes(testo)) ||
+                (prod.categoria && prod.categoria.toLowerCase().includes(testo)) ||
+                (prod.posizione && prod.posizione.toLowerCase().includes(testo)) ||
+                (prod.descrizione && prod.descrizione.toLowerCase().includes(testo));
 
-    console.log("Filtri applicati - prodotti mostrati:", filtrate.length);
+            const matchCategoria = !categoria ||
+                (prod.categoria && prod.categoria.trim().toLowerCase() === categoria.toLowerCase());
 
-    const filteredContainer = document.getElementById('filtered-container');
-    if (!filteredContainer) {
-        console.error("Container #filtered-container non trovato!");
-        return;
-    }
+            return matchTesto && matchCategoria;
+        });
 
-    filteredContainer.innerHTML = '';
+        if (!filteredContainer) {
+            console.error("#filtered-container non trovato!");
+            return;
+        }
 
-    if (filtrate.length === 0) {
-        filteredContainer.innerHTML = '<p style="text-align:center; padding:40px; color:#777;">Nessun prodotto corrisponde ai filtri.</p>';
-        return;
-    }
+        filteredContainer.innerHTML = '';
 
-    filtrate.forEach((prod) => {
-        const originalIndex = prodotti.indexOf(prod);
+        if (filtrate.length === 0) {
+            filteredContainer.innerHTML = '<p style="text-align:center; padding:40px; color:#777; font-size:1.2rem;">Nessun prodotto corrisponde ai filtri.</p>';
+            return;
+        }
 
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        card.innerHTML = `
-            ${prod.fotoPreview ? `<img src="${prod.fotoPreview}" alt="${prod.nome}" class="card-img">` : `<div class="card-img" style="display:flex; align-items:center; justify-content:center; font-size:3rem; color:#ccc;">🖼️</div>`}
-            <div class="card-content">
-                <h3 class="card-title">${prod.nome}</h3>
-                <div class="card-info">
-                    Quantità: <strong>${prod.quantita}</strong>
-                    <button class="qty-btn" data-index="${originalIndex}" data-delta="-1">-</button>
-                    <button class="qty-btn" data-index="${originalIndex}" data-delta="1">+</button>
+        filtrate.forEach(prod => {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.innerHTML = `
+                ${prod.fotoBase64
+                            ? `<img src="${prod.fotoBase64}" alt="${prod.nome}" class="card-img">`
+                            : `<div class="card-img" style="display:flex;align-items:center;justify-content:center;font-size:3rem;color:#ccc;">🖼️</div>`}
+                <div class="card-content">
+                    <h3 class="card-title">${prod.nome}</h3>
+                    <div class="card-info">
+                        Quantità: <strong>${prod.quantita}</strong>
+                        <button class="qty-btn" data-id="${prod.id}" data-delta="-1">-</button>
+                        <button class="qty-btn" data-id="${prod.id}" data-delta="1">+</button>
+                    </div>
+                    <div class="card-info">Prezzo: <span class="card-price">${prod.prezzo.toFixed(2)} €</span></div>
+                    <div class="card-info">Categoria: ${prod.categoria}</div>
+                    <div class="card-info">Posizione: ${prod.posizione}</div>
+                    ${prod.descrizione ? `<div class="card-info">Descrizione: ${prod.descrizione.substring(0, 100)}${prod.descrizione.length > 100 ? '...' : ''}</div>` : ''}
+                    ${prod.linkFornitore && prod.linkFornitore !== '-' ? `<a href="${prod.linkFornitore}" target="_blank" rel="noopener noreferrer" class="card-link">🔗 Vai al fornitore / Amazon</a>` : ''}
                 </div>
-                <div class="card-info">Prezzo: <span class="card-price">${prod.prezzo.toFixed(2)} €</span></div>
-                <div class="card-info">Categoria: ${prod.categoria}</div>
-                <div class="card-info">Posizione: ${prod.posizione}</div>
-                ${prod.descrizione ? `<div class="card-info">Descrizione: ${prod.descrizione.substring(0, 100)}${prod.descrizione.length > 100 ? '...' : ''}</div>` : ''}
-                ${prod.linkFornitore && prod.linkFornitore !== '-' ? `<a href="${prod.linkFornitore}" target="_blank" rel="noopener noreferrer" class="card-link">🔗 Vai al fornitore / Amazon</a>` : ''}
-            </div>
-            <div class="card-actions">
-                <button class="card-btn edit-btn" data-index="${originalIndex}">Modifica</button>
-                <button class="card-btn delete-btn" data-index="${originalIndex}">Rimuovi</button>
-            </div>
-        `;
-        filteredContainer.appendChild(card);
-    });
+                <div class="card-actions">
+                    <button class="card-btn edit-btn" data-id="${prod.id}">Modifica</button>
+                    <button class="card-btn delete-btn" data-id="${prod.id}">Rimuovi</button>
+                </div>
+            `;
+            filteredContainer.appendChild(card);
+        });
+    } catch (error) {
+        console.error("Errore in applicaFiltri:", error);
+        document.getElementById('filtered-container').innerHTML = '<p style="color:red; text-align:center; padding:40px;">Errore durante la ricerca</p>';
+    }
 }
-
-document.getElementById('btn-applica-filtro').addEventListener('click', applicaFiltri);
+document.getElementById('btn-applica-filtro').addEventListener('click', async (e) => {
+    e.preventDefault();
+    await applicaFiltri();
+});
 
 document.getElementById('btn-reset-filtro').addEventListener('click', () => {
     document.getElementById('filtro-testo').value = '';
     document.getElementById('filtro-categoria').value = '';
-    aggiornaCards();
+
+    if (filteredContainer) {
+        filteredContainer.innerHTML = '';
+        aggiornaCards();
+    }
+    console.log("Reset eseguito - campi svuotati");
 });
-// Avvio iniziale
+
+filteredContainer.addEventListener('click', async function(e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+
+    const id = btn.dataset.id;
+    if (!id) {
+        console.warn("Nessun data-id sul pulsante:", btn);
+        return;
+    }
+
+    if (btn.classList.contains('qty-btn')) {
+        const delta = parseInt(btn.dataset.delta);
+        if (!isNaN(delta)) {
+            await cambiaQuantita(id, delta);
+        }
+    }
+
+    if (btn.classList.contains('edit-btn')) {
+        await modificaProdotto(id);
+    }
+
+    if (btn.classList.contains('delete-btn')) {
+        await rimuoviProdotto(id);
+    }
+});
+
 homeScreen.style.display = 'flex';
 mainContent.style.display = 'none';
 if (btnTornaHome) btnTornaHome.style.display = 'none';
