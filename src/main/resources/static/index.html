@@ -12,6 +12,8 @@
         <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png">
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="styles.css">
+        <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
     </head>
     <body>
         <div id="home-screen" class="home-screen">
@@ -31,12 +33,20 @@
         <main id="main-content" style="display: none;">
             <!-- Pulsanti switch modalità (come prima) -->
             <div class="mode-selector">
-                <button id="btn-visita-main" class="mode-btn active">Visita Magazzino</button>
-                <button id="btn-aggiungi-main" class="mode-btn">Aggiungi Prodotto</button>
-                <button id="btn-torna-home" class="mode-btn torna-home-btn btn-icon">🏠</button>
+                <button id="btn-visita-main" class="mode-btn mode-btn-c active" title="Visita Magazzino">
+                    <span class="text">Visita Magazzino</span>
+                    <span class="icon-mobile">👀</span>
+                </button>
+                <button id="btn-aggiungi-main" class="mode-btn mode-btn-c" title="Aggiungi Prodotto">
+                    <span class="text">Aggiungi Prodotto</span>
+                    <span class="icon-mobile">+</span>
+                </button>
+                <button onclick="startScanning()" id="btn-barcode" class="mode-btn barcode-btn btn-icon" title="Scansiona barcode">𝄃𝄂𝄂𝄃</button>
                 <button id="btn-filtri-main" class="mode-btn filter-btn btn-icon" title="Cerca / Filtri">
                     <span class="filter-icon">🔍</span>
                 </button>
+                <button id="btn-torna-home" class="mode-btn torna-home-btn btn-icon" title="Home">🏠</button>
+                <div id="reader"></div>
             </div>
 
             <!-- Sezione Visita Magazzino (cards) -->
@@ -127,6 +137,13 @@
                 <div class="products-grid" id="filtered-container"></div> <!-- cards filtrate qui -->
             </section>
         </main>
+        <div id="toast-success" class="toast toast-success">
+            Prodotto aggiunto correttamente!
+        </div>
+        <div id="toast-error" class="toast toast-error">
+            Errore durante l'operazione!
+        </div>
     <script src="script.js"></script>
+        <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     </body>
 </html>

@@ -81,15 +81,18 @@ function switchMode(activeBtn, activeSection) {
 form.addEventListener('submit', async function(e) {
     e.preventDefault();
 
-    const nome = document.getElementById('nome').value.trim() || '';
+    const submitter = e.submitter || e.target.querySelector('#submit-btn');
+    const isSaveAndNew = submitter && submitter.id === 'save-and-new-btn';
+
+    // Pulsante da modificare (quello cliccato)
+    const activeBtn = submitter || submitBtn;
+
+    // RACCOLTA DATI (rimane uguale)
+    const nome = document.getElementById('nome')?.value?.trim() || '';
     if (!nome) {
         alert("Inserisci almeno il nome del prodotto!");
         return;
     }
-
-    const fotoBase64 = imgPreview?.src && imgPreview.style.display !== 'none'
-        ? imgPreview.src
-        : null;
 
     const prodottoData = {
         nome: nome,
@@ -99,16 +102,19 @@ form.addEventListener('submit', async function(e) {
         descrizione: document.getElementById('descrizione')?.value?.trim() || '-',
         posizione: document.getElementById('posizione')?.value?.trim() || '-',
         linkFornitore: document.getElementById('linkFornitore')?.value?.trim() || '',
-        fotoBase64: fotoBase64
+        fotoBase64: imgPreview?.src && imgPreview.style.display !== 'none'
+            ? imgPreview.src
+            : null
     };
 
     if (prodottoData.quantita < 0) prodottoData.quantita = 0;
 
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Salvataggio...';
+    activeBtn.disabled = true;
+    const originalText = activeBtn.textContent;
+    activeBtn.textContent = 'Salvataggio...';
 
     try {
-        let url = `${API_BASE_URL}/api/prodotti`;
+        let url = 'http://192.168.0.170:8080/api/prodotti';
         let method = 'POST';
 
         const editId = submitBtn.dataset.editId;
@@ -124,35 +130,46 @@ form.addEventListener('submit', async function(e) {
         });
 
         if (response.ok) {
-            if (document.getElementById('section-cerca').style.display === 'block') {
-                await applicaFiltri();  // ricarica filtri
-            } else {
-                await aggiornaCards();
-            }
             form.reset();
             imgPreview.src = '';
             imgPreview.style.display = 'none';
             if (previewP) previewP.style.display = 'block';
 
-            submitBtn.textContent = 'Aggiungi al Magazzino';
-            submitBtn.disabled = false;
+            activeBtn.textContent = originalText;
+            activeBtn.disabled = false;
+
             submitBtn.removeAttribute('data-edit-id');
             delete submitBtn.dataset.editId;
 
-            switchMode(btnVisitaMain, sectionVisita);
-            await aggiornaCards();
+            showSuccessToast("Prodotto salvato correttamente!");
+
+            if (isSaveAndNew) {
+                // Rimaniamo in Aggiungi
+            } else {
+                switchMode(btnVisitaMain, sectionVisita);
+                await aggiornaCards();
+            }
         } else {
             const errorText = await response.text();
-            alert("Errore salvataggio: " + errorText);
-            submitBtn.textContent = editId ? 'Salva Modifiche' : 'Aggiungi al Magazzino';
-            submitBtn.disabled = false;
+            showErrorToast("Errore salvataggio: " + (errorText || "Controlla i dati inseriti"));
+            activeBtn.textContent = originalText;
+            activeBtn.disabled = false;
         }
     } catch (error) {
         console.error("Errore:", error);
-        alert("Errore connessione al server");
-        submitBtn.textContent = 'Aggiungi al Magazzino';
-        submitBtn.disabled = false;
+        showErrorToast("Errore connessione al server");
+        activeBtn.textContent = originalText;
+        activeBtn.disabled = false;
     }
+});
+
+document.getElementById('save-and-new-btn')?.addEventListener('click', () => {
+    const submitEvent = new SubmitEvent('submit', {
+        bubbles: true,
+        cancelable: true,
+        submitter: document.getElementById('save-and-new-btn')
+    });
+    form.dispatchEvent(submitEvent);
 });
 
 const fotoInput = document.getElementById('foto');
@@ -274,13 +291,12 @@ async function cambiaQuantita(id, delta) {
 
         if (putResp.ok) {
             if (document.getElementById('section-cerca').style.display === 'block') {
-                await applicaFiltri();  // ricarica filtri
+                await applicaFiltri();
             } else {
                 await aggiornaCards();
             }
         }
     } catch (error) {
-        console.error("Errore quantità:", error);
         alert("Impossibile aggiornare quantità");
     }
 }
@@ -289,20 +305,23 @@ async function rimuoviProdotto(id) {
     if (!confirm("Vuoi rimuovere questo prodotto?")) return;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/prodotti/${id}`, {
+        const response = await fetch(`http://192.168.0.170:8080/api/prodotti/${id}`, {
             method: 'DELETE'
         });
 
         if (response.ok) {
+            showSuccessToast("Prodotto rimosso correttamente!");
+            // <--- QUI aggiungi il controllo
             if (document.getElementById('section-cerca').style.display === 'block') {
-                await applicaFiltri();  // ricarica filtri
+                await applicaFiltri();
             } else {
                 await aggiornaCards();
             }
+        } else {
+            showErrorToast("Errore rimozione");
         }
     } catch (error) {
-        console.error("Errore DELETE:", error);
-        alert("Errore connessione al server");
+        showErrorToast("Errore connessione durante la rimozione");
     }
 }
 
@@ -471,11 +490,11 @@ function startDictation(inputId) {
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
-    const micBtn = document.getElementById(`mic-${inputId.split('-')[1] || inputId}`);
+    const micBtn = document.getElementById(`mic-${inputId}`);
     micBtn.classList.add('listening');
 
     recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
+        const transcript = event.results[0][0].transcript.trim();
         document.getElementById(inputId).value = transcript;
         micBtn.classList.remove('listening');
     };
@@ -486,6 +505,7 @@ function startDictation(inputId) {
     };
 
     recognition.onend = () => micBtn.classList.remove('listening');
+
     recognition.start();
 }
 
@@ -497,3 +517,112 @@ document.getElementById('mic-descrizione').addEventListener('click', () => start
 document.getElementById('mic-posizione').addEventListener('click', () => startDictation('posizione'));
 document.getElementById('mic-linkFornitore').addEventListener('click', () => startDictation('linkFornitore'));
 
+// SCANSIONE BARCODE
+function startScanning() {
+    Html5Qrcode.getCameras().then(cameras => {
+        if (cameras.length === 0) {
+            alert('Nessuna telecamera trovata. Collega una webcam o usa il telefono.');
+            return;
+        }
+        const cameraId = cameras[0].id; // usa la prima disponibile
+        const html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.start(
+            cameraId,
+            {
+                fps: 10,    // frame per secondo
+                qrbox: 250  // dimensione della finestra di scansione
+            },
+            qrCodeMessage => {
+                console.log(`QR Code rilevato: ${qrCodeMessage}`);
+                // Qui puoi gestire il risultato
+            },
+            errorMessage => {
+                // messaggi di errore di scansione
+                console.log(`Errore di scansione: ${errorMessage}`);
+            }
+        ).catch(err => {
+            console.error('Errore avvio scansione:', err);
+            alert('Impossibile avviare la scansione. Assicurati che la telecamera sia disponibile e che i permessi siano attivi.');
+        });
+    }).catch(err => {
+        console.error('Errore nel recupero delle telecamere:', err);
+        alert('Errore nel recupero delle telecamere: ' + err);
+    });
+}
+
+// Funzione per aggiungere https:// se manca
+function addHttpsPrefix(input) {
+    let val = input.value.trim();
+
+    if (!val) return; // vuoto → non fare nulla
+
+    // Già ha protocollo → esci
+    if (val.startsWith('http://') || val.startsWith('https://')) return;
+
+    // Inizia con www. → aggiungi https://
+    if (val.startsWith('www.')) {
+        input.value = 'https://' + val;
+        return;
+    }
+
+    // Contiene un dominio (ha un punto e non è solo testo) → aggiungi https://
+    if (val.includes('.') && !val.includes(' ')) {
+        input.value = 'https://' + val;
+    }
+}
+
+// Applica su input manuale + dettatura
+const linkInput = document.getElementById('linkFornitore');
+if (linkInput) {
+    // Su input manuale (digita)
+    linkInput.addEventListener('input', () => addHttpsPrefix(linkInput));
+
+    // Su dettatura vocale (quando finisce riconoscimento)
+    linkInput.addEventListener('change', () => addHttpsPrefix(linkInput));
+
+    // Polling leggero solo mentre microfono attivo (opzionale, ma sicuro)
+    let checkInterval;
+    document.getElementById('mic-linkFornitore').addEventListener('click', () => {
+        // Avvia controllo ogni 500ms mentre ascolta
+        checkInterval = setInterval(() => {
+            if (linkInput.value.trim()) {
+                addHttpsPrefix(linkInput);
+            }
+        }, 500);
+    });
+
+    // Ferma polling quando dettatura finisce
+    document.querySelectorAll('.mic-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (!btn.classList.contains('listening')) {
+                clearInterval(checkInterval);
+            }
+        });
+    });
+}
+
+// Toast di successo
+function showSuccessToast(message = "Prodotto aggiunto correttamente!") {
+    const toast = document.getElementById('toast-success');
+    if (!toast) return;
+
+    toast.textContent = message;
+    toast.classList.add('show');
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+// Toast di errore
+function showErrorToast(message = "Errore durante l'operazione!") {
+    const toast = document.getElementById('toast-error');
+    if (!toast) return;
+
+    toast.textContent = message;
+    toast.classList.add('show');
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 4000); // errore visibile un po' più a lungo
+}
