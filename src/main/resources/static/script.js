@@ -196,82 +196,115 @@ fotoInput.addEventListener('change', function(e) {
     }
 });
 
+// Variabile globale per la vista (default cards)
+let viewVisita = 'cards';
+
 async function aggiornaCards() {
-    if (!productsContainer) {
-        console.error("Container non trovato");
+    const cardsDiv = document.getElementById('cards-container-visita');
+    const tableDiv = document.getElementById('table-container-visita');
+
+    if (!cardsDiv || !tableDiv) {
+        console.error("Contenitori non trovati in aggiornaCards()");
+        console.log("cards-container-visita esiste?", !!document.getElementById('cards-container-visita'));
+        console.log("table-container-visita esiste?", !!document.getElementById('table-container-visita'));
         return;
     }
+
+    // Pulisci entrambi
+    cardsDiv.innerHTML = '';
+    tableDiv.innerHTML = '';
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/prodotti`);
         if (!response.ok) throw new Error("Errore caricamento");
         const data = await response.json();
 
-        productsContainer.innerHTML = '';
+        if (viewVisita === 'cards') {
+            cardsDiv.style.display = 'grid';
+            tableDiv.style.display = 'none';
 
-        data.forEach(prod => {
-            const card = document.createElement('div');
-            card.className = 'product-card';
-            card.innerHTML = `
-                ${prod.fotoBase64
-                ? `<img src="${prod.fotoBase64}" alt="${prod.nome}" class="card-img">`
-                : `<div class="card-img" style="display:flex;align-items:center;justify-content:center;font-size:3rem;color:#ccc;">🖼️</div>`}
-                <div class="card-content">
-                    <h3 class="card-title">${prod.nome}</h3>
-
-                    <div class="card-info">
-                        Quantità: <strong>${prod.quantita}</strong>
-                        <button class="qty-btn" data-id="${prod.id}" data-delta="-1">-</button>
-                        <button class="qty-btn" data-id="${prod.id}" data-delta="1">+</button>
+            data.forEach(prod => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    ${prod.fotoBase64
+                    ? `<img src="${prod.fotoBase64}" alt="${prod.nome}" class="card-img">`
+                    : `<div class="card-img" style="display:flex;align-items:center;justify-content:center;font-size:3rem;color:#ccc;">🖼️</div>`}
+                    <div class="card-content">
+                        <h3 class="card-title">${prod.nome}</h3>
+                        <div class="card-info">
+                            Quantità: <strong>${prod.quantita}</strong>
+                            <button class="qty-btn" data-id="${prod.id}" data-delta="-1">-</button>
+                            <button class="qty-btn" data-id="${prod.id}" data-delta="1">+</button>
+                        </div>
+                        <div class="card-info">Prezzo: <span class="card-price">${prod.prezzo.toFixed(2)} €</span></div>
+                        <div class="card-info">Categoria: ${prod.categoria}</div>
+                        <div class="card-info">Posizione: ${prod.posizione}</div>
+                        ${prod.descrizione ? `<div class="card-info">Descrizione: ${prod.descrizione.substring(0, 100)}${prod.descrizione.length > 100 ? '...' : ''}</div>` : ''}
+                        ${prod.linkFornitore && prod.linkFornitore !== '-' ? `<a href="${prod.linkFornitore}" target="_blank" rel="noopener noreferrer" class="card-link">🔗 Vai al fornitore / Amazon</a>` : ''}
                     </div>
-                    <div class="card-info">Prezzo: <span class="card-price">${prod.prezzo.toFixed(2)} €</span></div>
-                    <div class="card-info">Categoria: ${prod.categoria}</div>
-                    <div class="card-info">Posizione: ${prod.posizione}</div>
-                    ${prod.descrizione ? `<div class="card-info">Descrizione: ${prod.descrizione.substring(0, 100)}${prod.descrizione.length > 100 ? '...' : ''}</div>` : ''}
-                    ${prod.linkFornitore && prod.linkFornitore !== '-' ? `<a href="${prod.linkFornitore}" target="_blank" rel="noopener noreferrer" class="card-link">🔗 Vai al fornitore / Amazon</a>` : ''}
-                </div>
+                    <div class="card-actions">
+                        <button class="card-btn edit-btn" data-id="${prod.id}">Modifica</button>
+                        <button class="card-btn delete-btn" data-id="${prod.id}">Rimuovi</button>
+                    </div>
+                `;
+                cardsDiv.appendChild(card);
+            });
+        } else {
+            cardsDiv.style.display = 'none';
+            tableDiv.style.display = 'block';
 
-                <div class="card-actions">
-                    <button class="card-btn edit-btn" data-id="${prod.id}">Modifica</button>
-                    <button class="card-btn delete-btn" data-id="${prod.id}">Rimuovi</button>
-                </div>
+            const table = document.createElement('table');
+            table.style.width = '100%';
+            table.style.borderCollapse = 'collapse';
+            table.innerHTML = `
+                <thead>
+                    <tr style="background: #f0f0f0; text-align: left;">
+                        <th style="padding: 12px; border-bottom: 2px solid #ddd;">Foto</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #ddd;">Nome</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #ddd;">Quantità</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #ddd;">Prezzo</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #ddd;">Categoria</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #ddd;">Posizione</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #ddd;">Descrizione</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #ddd;">Azioni</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
             `;
-            productsContainer.appendChild(card);
-        });
+
+            const tbody = table.querySelector('tbody');
+
+            data.forEach(prod => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">
+                        ${prod.fotoBase64
+                    ? `<img src="${prod.fotoBase64}" style="width:60px; height:60px; object-fit:cover; border-radius:4px;">`
+                    : 'No foto'}
+                    </td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${prod.nome}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${prod.quantita}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${prod.prezzo.toFixed(2)} €</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${prod.categoria}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${prod.posizione}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${prod.descrizione || '-'}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee; display: flex; flex-direction: row; gap:5px;">
+                        <button title="Modifica" class="card-btn edit-btn" data-id="${prod.id}">✏️</button>
+                        <button title="Elimina" class="card-btn delete-btn" data-id="${prod.id}">❌</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            tableDiv.appendChild(table);
+        }
     } catch (error) {
-        console.error("Errore fetch prodotti:", error);
-        productsContainer.innerHTML = '<p style="color:red; text-align:center;">Errore caricamento prodotti</p>';
+        console.error("Errore in aggiornaCards:", error);
+        if (cardsDiv) cardsDiv.innerHTML = '<p style="color:red; text-align:center;">Errore caricamento</p>';
+        if (tableDiv) tableDiv.innerHTML = '<p style="color:red; text-align:center;">Errore caricamento</p>';
     }
 }
-
-productsContainer.addEventListener('click', async function(e) {
-    const btn = e.target.closest('button');
-    if (!btn) return;
-
-    const id = btn.dataset.id;  // o data-id
-    if (!id) {
-        console.warn("Nessun data-id sul pulsante:", btn);
-        return;
-    }
-
-    if (btn.classList.contains('edit-btn')) {
-        console.log("Modifica cliccato per ID:", id);
-        await modificaProdotto(id);
-    }
-
-    if (btn.classList.contains('delete-btn')) {
-        console.log("Rimuovi cliccato per ID:", id);
-        await rimuoviProdotto(id);
-    }
-
-    if (btn.classList.contains('qty-btn')) {
-        const delta = parseInt(btn.dataset.delta);
-        if (!isNaN(delta)) {
-            console.log("Quantità cambiata:", delta, "per ID:", id);
-            await cambiaQuantita(id, delta);
-        }
-    }
-});
 
 async function cambiaQuantita(id, delta) {
     try {
@@ -360,12 +393,37 @@ async function modificaProdotto(id) {
     }
 }
 
+// Vista corrente per la sezione Cerca
+let viewCerca = 'cards';
+
+// Funzione aggiornata per applicare i filtri
 async function applicaFiltri() {
     const testoInput = document.getElementById('filtro-testo');
     const categoriaSelect = document.getElementById('filtro-categoria');
+    const testo = testoInput?.value?.toLowerCase().trim() || '';
+    const categoria = categoriaSelect?.value?.trim() || '';
 
-    const testo = testoInput.value.toLowerCase().trim() || '';
-    const categoria = categoriaSelect.value.trim() || '';  // trim anche qui
+    const cardsContainer = document.getElementById('cards-container-cerca');
+    const tableContainer = document.getElementById('table-container-cerca');
+    const placeholder = document.getElementById('cerca-placeholder'); // da aggiungere nell'HTML
+
+    if (!cardsContainer || !tableContainer) {
+        console.error("Contenitori per la vista non trovati");
+        return;
+    }
+
+    // Se NON ci sono filtri attivi → mostra placeholder e nasconde risultati
+    if (!testo && !categoria) {
+        if (placeholder) placeholder.style.display = 'flex';
+        cardsContainer.style.display = 'none';
+        tableContainer.style.display = 'none';
+        cardsContainer.innerHTML = '';
+        tableContainer.innerHTML = '';
+        return;
+    }
+
+    // Nascondi placeholder quando applichi filtri
+    if (placeholder) placeholder.style.display = 'none';
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/prodotti`);
@@ -381,97 +439,145 @@ async function applicaFiltri() {
                 (prod.categoria && prod.categoria.toLowerCase().includes(testo)) ||
                 (prod.posizione && prod.posizione.toLowerCase().includes(testo)) ||
                 (prod.descrizione && prod.descrizione.toLowerCase().includes(testo));
-
             const matchCategoria = !categoria ||
                 (prod.categoria && prod.categoria.trim().toLowerCase() === categoria.toLowerCase());
-
             return matchTesto && matchCategoria;
         });
 
-        if (!filteredContainer) {
-            console.error("#filtered-container non trovato!");
-            return;
-        }
-
-        filteredContainer.innerHTML = '';
+        // Pulisci i risultati
+        cardsContainer.innerHTML = '';
+        tableContainer.innerHTML = '';
 
         if (filtrate.length === 0) {
-            showErrorToast("Nessun prodotto corrisponde ai filtri")
+            if (placeholder) {
+                placeholder.innerHTML = "Nessun prodotto corrisponde ai filtri";
+                placeholder.style.display = 'flex';
+            } else {
+                showErrorToast("Nessun prodotto corrisponde ai filtri");
+            }
             return;
         }
 
-        filtrate.forEach(prod => {
-            const card = document.createElement('div');
-            card.className = 'product-card';
-            card.innerHTML = `
-                ${prod.fotoBase64
-                            ? `<img src="${prod.fotoBase64}" alt="${prod.nome}" class="card-img">`
-                            : `<div class="card-img" style="display:flex;align-items:center;justify-content:center;font-size:3rem;color:#ccc;">🖼️</div>`}
-                <div class="card-content">
-                    <h3 class="card-title">${prod.nome}</h3>
-                    <div class="card-info">
-                        Quantità: <strong>${prod.quantita}</strong>
-                        <button class="qty-btn" data-id="${prod.id}" data-delta="-1">-</button>
-                        <button class="qty-btn" data-id="${prod.id}" data-delta="1">+</button>
+        if (viewCerca === 'cards') {
+            cardsContainer.style.display = 'grid';
+            tableContainer.style.display = 'none';
+
+            filtrate.forEach(prod => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    ${prod.fotoBase64 ? `<img src="${prod.fotoBase64}" alt="${prod.nome}" class="card-img">` : `<div class="card-img" style="display:flex;align-items:center;justify-content:center;font-size:3rem;color:#ccc;">🖼️</div>`}
+                    <div class="card-content">
+                        <h3 class="card-title">${prod.nome}</h3>
+                        <div class="card-info">
+                            Quantità: <strong>${prod.quantita}</strong>
+                            <button class="qty-btn" data-id="${prod.id}" data-delta="-1">-</button>
+                            <button class="qty-btn" data-id="${prod.id}" data-delta="1">+</button>
+                        </div>
+                        <div class="card-info">Prezzo: <span class="card-price">${prod.prezzo.toFixed(2)} €</span></div>
+                        <div class="card-info">Categoria: ${prod.categoria}</div>
+                        <div class="card-info">Posizione: ${prod.posizione}</div>
+                        ${prod.descrizione ? `<div class="card-info">Descrizione: ${prod.descrizione.substring(0, 100)}${prod.descrizione.length > 100 ? '...' : ''}</div>` : ''}
+                        ${prod.linkFornitore && prod.linkFornitore !== '-' ? `<a href="${prod.linkFornitore}" target="_blank" rel="noopener noreferrer" class="card-link">🔗 Vai al fornitore / Amazon</a>` : ''}
                     </div>
-                    <div class="card-info">Prezzo: <span class="card-price">${prod.prezzo.toFixed(2)} €</span></div>
-                    <div class="card-info">Categoria: ${prod.categoria}</div>
-                    <div class="card-info">Posizione: ${prod.posizione}</div>
-                    ${prod.descrizione ? `<div class="card-info">Descrizione: ${prod.descrizione.substring(0, 100)}${prod.descrizione.length > 100 ? '...' : ''}</div>` : ''}
-                    ${prod.linkFornitore && prod.linkFornitore !== '-' ? `<a href="${prod.linkFornitore}" target="_blank" rel="noopener noreferrer" class="card-link">🔗 Vai al fornitore / Amazon</a>` : ''}
-                </div>
-                <div class="card-actions">
-                    <button class="card-btn edit-btn" data-id="${prod.id}">Modifica</button>
-                    <button class="card-btn delete-btn" data-id="${prod.id}">Rimuovi</button>
-                </div>
+                    <div class="card-actions">
+                        <button class="card-btn edit-btn" data-id="${prod.id}">Modifica</button>
+                        <button class="card-btn delete-btn" data-id="${prod.id}">Rimuovi</button>
+                    </div>
+                `;
+                cardsContainer.appendChild(card);
+            });
+        } else {
+            cardsContainer.style.display = 'none';
+            tableContainer.style.display = 'block';
+
+            const table = document.createElement('table');
+            table.style.width = '100%';
+            table.style.borderCollapse = 'collapse';
+            table.innerHTML = `
+                <thead>
+                    <tr style="background: #f0f0f0; text-align: left;">
+                        <th style="padding: 12px; border-bottom: 2px solid #ddd;">Foto</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #ddd;">Nome</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #ddd;">Quantità</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #ddd;">Prezzo</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #ddd;">Categoria</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #ddd;">Posizione</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #ddd;">Azioni</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
             `;
-            filteredContainer.appendChild(card);
-        });
+
+            const tbody = table.querySelector('tbody');
+
+            filtrate.forEach(prod => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">
+                        ${prod.fotoBase64 ? `<img src="${prod.fotoBase64}" style="width:60px; height:60px; object-fit:cover; border-radius:4px;">` : 'No foto'}
+                    </td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${prod.nome}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${prod.quantita}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${prod.prezzo.toFixed(2)} €</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${prod.categoria}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${prod.posizione}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee; display: flex; flex-direction: row; gap:5px;">
+                        <button style="margin-top: 0;" title="Modifica" class="card-btn edit-btn" data-id="${prod.id}">✏️</button>
+                        <button style="margin-top: 0;" title="Elimina" class="card-btn delete-btn" data-id="${prod.id}">❌</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            tableContainer.appendChild(table);
+        }
     } catch (error) {
         console.error("Errore in applicaFiltri:", error);
-        document.getElementById('filtered-container').innerHTML = '<p style="color:red; text-align:center; padding:40px;">Errore durante la ricerca</p>';
+        if (placeholder) {
+            placeholder.innerHTML = "Errore durante la ricerca";
+            placeholder.style.display = 'flex';
+        }
     }
 }
-document.getElementById('btn-applica-filtro').addEventListener('click', async (e) => {
+
+// Toggle vista per sezione Cerca
+document.getElementById('toggle-view-cerca')?.addEventListener('click', () => {
+    viewCerca = viewCerca === 'cards' ? 'table' : 'cards';
+    applicaFiltri();
+});
+
+// Event listener click su cards-container-cerca e table-container-cerca (unico listener per entrambi)
+document.querySelectorAll('#cards-container-cerca, #table-container-cerca').forEach(container => {
+    container.addEventListener('click', async function(e) {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+
+        const id = btn.dataset.id;
+        if (!id) {
+            console.warn("Nessun data-id sul pulsante:", btn);
+            return;
+        }
+
+        if (btn.classList.contains('qty-btn')) {
+            const delta = parseInt(btn.dataset.delta);
+            if (!isNaN(delta)) await cambiaQuantita(id, delta);
+        }
+        if (btn.classList.contains('edit-btn')) await modificaProdotto(id);
+        if (btn.classList.contains('delete-btn')) await rimuoviProdotto(id);
+    });
+});
+
+document.getElementById('btn-applica-filtro')?.addEventListener('click', async (e) => {
     e.preventDefault();
     await applicaFiltri();
 });
 
-document.getElementById('btn-reset-filtro').addEventListener('click', () => {
+document.getElementById('btn-reset-filtro')?.addEventListener('click', () => {
     document.getElementById('filtro-testo').value = '';
     document.getElementById('filtro-categoria').value = '';
-
-    if (filteredContainer) {
-        filteredContainer.innerHTML = '';
-        aggiornaCards();
-    }
+    applicaFiltri(); // questo mostrerà il placeholder
     console.log("Reset eseguito - campi svuotati");
-});
-
-filteredContainer.addEventListener('click', async function(e) {
-    const btn = e.target.closest('button');
-    if (!btn) return;
-
-    const id = btn.dataset.id;
-    if (!id) {
-        console.warn("Nessun data-id sul pulsante:", btn);
-        return;
-    }
-
-    if (btn.classList.contains('qty-btn')) {
-        const delta = parseInt(btn.dataset.delta);
-        if (!isNaN(delta)) {
-            await cambiaQuantita(id, delta);
-        }
-    }
-
-    if (btn.classList.contains('edit-btn')) {
-        await modificaProdotto(id);
-    }
-
-    if (btn.classList.contains('delete-btn')) {
-        await rimuoviProdotto(id);
-    }
 });
 
 homeScreen.style.display = 'flex';
@@ -670,10 +776,107 @@ async function detectWithHuggingFace(base64Image) {
     }
 }
 
+document.getElementById('btn-show-cards-visita')?.addEventListener('click', () => {
+    viewVisita = 'cards';
+    aggiornaCards();
+});
 
+document.getElementById('btn-show-table-visita')?.addEventListener('click', () => {
+    viewVisita = 'table';
+    aggiornaCards();
+});
 
+document.getElementById('btn-show-cards-cerca')?.addEventListener('click', () => {
+    viewCerca = 'cards';
+    applicaFiltri();
+});
 
+document.getElementById('btn-show-table-cerca')?.addEventListener('click', () => {
+    viewCerca = 'table';
+    applicaFiltri();
+});
 
+document.getElementById('btn-view-cards-visita')?.addEventListener('click', () => {
+    viewVisita = 'cards';
+    aggiornaCards();
+    highlightViewButton('visita', 'cards');
+});
 
+document.getElementById('btn-view-table-visita')?.addEventListener('click', () => {
+    viewVisita = 'table';
+    aggiornaCards();
+    highlightViewButton('visita', 'table');
+});
+
+// Pulsanti vista CERCA
+document.getElementById('btn-view-cards-cerca')?.addEventListener('click', () => {
+    viewCerca = 'cards';
+    applicaFiltri();
+    highlightViewButton('cerca', 'cards');
+});
+
+document.getElementById('btn-view-table-cerca')?.addEventListener('click', () => {
+    viewCerca = 'table';
+    applicaFiltri();
+    highlightViewButton('cerca', 'table');
+});
+
+// Funzione helper per evidenziare pulsante attivo
+function highlightViewButton(section, view) {
+    const prefix = section === 'visita' ? 'visita' : 'cerca';
+    document.getElementById(`btn-view-cards-${prefix}`)?.classList.remove('active');
+    document.getElementById(`btn-view-table-${prefix}`)?.classList.remove('active');
+
+    document.getElementById(`btn-view-${view}-${prefix}`)?.classList.add('active');
+}
+
+// Forza stato iniziale corretto all’avvio
+window.addEventListener('load', () => {
+    highlightViewButton('visita', viewVisita || 'cards');
+    highlightViewButton('cerca', viewCerca || 'cards');
+});
+
+// Listener click per pulsanti in MAGAZZINO (cards + tabella)
+const visitaContainers = [
+    document.getElementById('cards-container-visita'),
+    document.getElementById('table-container-visita')
+];
+
+visitaContainers.forEach(container => {
+    if (container) {
+        container.addEventListener('click', async function(e) {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+
+            const id = btn.dataset.id;
+            if (!id) {
+                console.warn("Nessun data-id sul pulsante in MAGAZZINO:", btn);
+                return;
+            }
+
+            console.log("CLICK DETECTATO in MAGAZZINO:", btn.className, "ID:", id); // DEBUG
+
+            if (btn.classList.contains('qty-btn')) {
+                const delta = parseInt(btn.dataset.delta);
+                if (!isNaN(delta)) {
+                    console.log("Cambiata quantità:", delta, "per ID:", id);
+                    await cambiaQuantita(id, delta);
+                }
+            }
+
+            if (btn.classList.contains('edit-btn')) {
+                console.log("Modifica cliccato per ID:", id);
+                await modificaProdotto(id);
+            }
+
+            if (btn.classList.contains('delete-btn')) {
+                console.log("Rimuovi cliccato per ID:", id);
+                await rimuoviProdotto(id);
+            }
+        });
+    } else {
+        console.warn("Contenitore MAGAZZINO non trovato:", container?.id);
+    }
+});
 
 

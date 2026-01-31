@@ -52,8 +52,18 @@
             </div>
             <!-- Sezione Visita Magazzino (cards) -->
             <section id="section-visita" class="mode-section">
-                <h2 style="color: white">Magazzino</h2>
-                <div class="products-grid" id="products-container"></div>
+                <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 16px; width: 100%; position: relative;">
+                    <h2 style="color: white; margin: 0; position: absolute; left: 50%; transform: translateX(-50%);">Magazzino</h2>
+
+                    <div class="view-toggle-group" style="margin-left: auto; display: flex; gap: 0;">
+                        <button id="btn-view-cards-visita" class="view-btn active" style="border-radius: 6px 0 0 6px;">🃏 Cards</button>
+                        <button id="btn-view-table-visita" class="view-btn" style="border-radius: 0 6px 6px 0;">📋 Tabella</button>
+                    </div>
+                </div>
+                <div id="cards-container-visita" class="products-container products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px;">
+                </div>
+                <div id="table-container-visita" class="products-container" style="display: none;">
+                </div>
             </section>
 
             <!-- Sezione Aggiungi Prodotto -->
@@ -159,8 +169,16 @@
                 </form>
             </section>
             <!-- Sezione Cerca (filtri) -->
+
             <section id="section-cerca" class="mode-section" style="display: none; padding: 20px">
-                <h2 style="color: white">Cerca in Magazzino</h2>
+                <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 16px; width: 100%; position: relative;">
+                    <h2 style="color: white; margin: 0; position: absolute; left: 50%; transform: translateX(-50%);">Cerca in Magazzino</h2>
+
+                    <div class="view-toggle-group" style="margin-left: auto; display: flex; gap: 0;">
+                        <button id="btn-view-cards-cerca" class="view-btn active" style="border-radius: 6px 0 0 6px;">🃏 Cards</button>
+                        <button id="btn-view-table-cerca" class="view-btn" style="border-radius: 0 6px 6px 0;">📋 Tabella</button>
+                    </div>
+                </div>
                 <div class="filtri-container">
                     <input type="text" id="filtro-testo" placeholder="Cerca per nome, categoria o posizione...">
                     <select id="filtro-categoria">
@@ -172,7 +190,16 @@
                     <button type="button" id="btn-applica-filtro" style="font-weight: bold">Applica Filtro</button>
                     <button type="button" id="btn-reset-filtro" style="font-weight: bold">Reset</button>
                 </div>
-                <div class="products-grid" id="filtered-container"></div> <!-- cards filtrate qui -->
+                <div id="cerca-placeholder" style="text-align: center; padding: 80px 20px; color: white; font-size: 1.2rem; min-height: 300px; display: flex; align-items: center; justify-content: center;">
+                    Applica un filtro per vedere i prodotti
+                </div>
+                <div id="cards-container-cerca" class="products-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px;">
+                    <!-- cards qui -->
+                </div>
+
+                <div id="table-container-cerca" class="products-container" style="display: none;">
+                    <!-- tabella qui -->
+                </div>
             </section>
         </main>
         <div id="toast-success" class="toast toast-success">
