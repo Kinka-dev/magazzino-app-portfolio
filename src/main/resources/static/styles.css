@@ -11,7 +11,7 @@
 
 body {
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #F9B023;
+    background: #19643F;
     color: #2b2a2a;
     line-height: 1.5;
     overflow-x: hidden;
@@ -26,6 +26,8 @@ h2 {
     margin: 24px 0 12px;
     color: #2b2a2a;
     text-align: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 /* Schermata iniziale */
@@ -34,7 +36,7 @@ h2 {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #153075;
+    background: #19643F;
     text-align: center;
 }
 
@@ -62,7 +64,7 @@ h2 {
 }
 
 .home-btn {
-    background: #F9B023;
+    background: #C24665;
     color: white;
     border: none;
     padding: 18px 32px;
@@ -100,14 +102,20 @@ label {
     font-size: 0.95rem;
 }
 
-input, textarea {
+input {
     width: 100%;
     padding: 10px;
     border: 1px solid #ccc;
     font-size: 1rem;
+    border-radius: 6px 0 0 6px;
 }
 
 textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    border-radius: 6px 0 6px 6px;
     resize: vertical;
     min-height: 80px;
 }
@@ -117,7 +125,7 @@ button {
     color: white;
     border: none;
     border-radius: 6px;
-    font-size: 1.05rem;
+    font-size: 1.2rem;
     font-weight: bold;
     margin-top: 16px;
     cursor: pointer;
@@ -128,7 +136,7 @@ button:hover {
     background: #0d65d6;
 }
 
-.preview-container {
+.preview-container, #scan-container {
     text-align: center;
     margin: 16px 0;
     display: flex;
@@ -136,8 +144,7 @@ button:hover {
     justify-content: center;
 }
 
-#img-preview {
-    max-width: 100%;
+#img-preview, #scan-content {
     max-height: 220px;
     border-radius: 8px;
     margin-top: 8px;
@@ -221,23 +228,27 @@ button:hover {
         padding: 16px 20px;
         font-size: 1.05rem;
     }
-
     .card-actions {
         gap: 5px;
         padding: 12px;
     }
-}
 
+    .container-foto-btns {
+        border-right: none!important;
+        padding-right: 0!important;
+    }
+
+}
 .mode-btn {
-    padding: 16px 16px;
-    font-size: 1rem;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    background: #084197;
+    font-size: 1.5rem;
+    margin-top: 5px;
+    padding: 10px 16px;
+    background: #F9B023;
     color: white;
-    transition: all 0.2s;
-    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(26,115,232,0.3);
+    min-width: 50px;
 }
 
 .mode-btn.active {
@@ -322,7 +333,7 @@ header,
 
 #section-aggiungi {
     background: white;
-    padding: 24px;
+    padding: 20px;
     border-radius: 12px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.08);
     max-width: 600px;            /* larghezza massima comoda per il form */
@@ -334,7 +345,7 @@ main,
     max-width: 1280px;
     margin: 0 auto;
     width: 100%;
-    padding: 0 10px;
+    padding: 0 20px;
     box-sizing: border-box;
 }
 
@@ -345,40 +356,6 @@ main,
     margin: 32px 0;
     /*scroll-snap-type: y mandatory;*/
     /*-webkit-overflow-scrolling: touch;*/
-}
-
-@media (min-width: 601px) {
-    .products-grid {
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 24px;
-    }
-    .form-actions {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-        margin-top: 10px;
-        font-weight: bold;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-    }
-    h2 {
-        margin-bottom: 10px;
-    }
-}
-
-@media (min-width: 901px) {
-    .products-grid {
-        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-        gap: 28px;
-    }
-}
-
-@media (min-width: 1201px) {
-    .products-grid {
-        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-        gap: 32px;
-    }
 }
 
 .product-card {
@@ -413,15 +390,6 @@ main,
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-}
-
-.sub-btn #save-and-new-btn{
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    font-weight: bold;
 }
 
 .custom-file-upload {
@@ -470,43 +438,19 @@ main,
     text-align: center;
 }
 
-.mode-selector {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    gap: 5px;
-    margin-bottom: 10px;
-}
-
 .btn-icon {
     font-size: 1.5rem;
 }
 
-.form-actions {
-    display: flex;
-    flex-direction: row;
-    gap: 5px;
-    margin-top: 10px;
-    font-weight: bold;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-}
-
-#save-and-new-btn {
-    background: #3498db;
-    color: white;
-}
-
 .mic-btn {
-    background: #084197;
-    color: white;
+    background: #F9B023;
     border: none;
-    border-radius: 30%;
     font-size: 1.2rem;
     cursor: pointer;
-    padding: 10px;
-    margin-left: 5px;
+    padding: 9px;
+    margin-left: 0;
+    margin-top: 0;
+    border-radius: 0 6px 6px 0;
 }
 .mic-btn.listening {
     background: #e74c3c;
@@ -514,7 +458,6 @@ main,
 }
 
 .mic-btn:hover {
-    transform: translateY(-8px);
     box-shadow: 0 12px 32px rgba(0,0,0,0.2);
 }
 
@@ -522,15 +465,6 @@ main,
     0% { transform: scale(1); }
     50% { transform: scale(1.15); }
     100% { transform: scale(1); }
-}
-
-.form-btns {
-    display: flex;
-    align-items:flex-end;
-}
-.form-actions button:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 32px rgba(0,0,0,0.2);
 }
 
 .toast {
@@ -553,31 +487,208 @@ main,
     opacity: 1;
 }
 
+.toast-error {
+    background: #e74c3c;
+}
+
 .mode-btn-c {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    min-width: 140px;
+    min-width: 50px;
 }
 
-.mode-btn-c .icon-mobile {
-    display: none;
-}
-
-@media (max-width: 600px) {
+@media (min-width: 601px) {
     .mode-btn-c {
-        min-width: 70px;
+        min-width: 50px;
         padding: 12px;
         font-size: 0;
     }
-
     .mode-btn-c .icon-mobile {
         display: inline-block;
-        font-size: 1.4rem; /* dimensione icona */
+        font-size: 1.5rem; /* dimensione icona */
     }
 
     .mode-btn-c span.text {
         display: none;     /* nasconde il testo "Aggiungi Prodotto" */
+    }
+}
+@media (max-width: 600px) {
+    #section-visita {
+        margin-bottom: 80px;
+    }
+    #section-aggiungi {
+        margin-bottom: 180px;
+    }
+    .products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 24px;
+    }
+    .form-actions-btns {
+        margin-bottom: 50px;
+        padding-top: 20px;
+        gap: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        width: 100%;
+    }
+    h2 {
+        margin-bottom: 10px;
+    }
+    .mode-selector {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        gap: 10px;
+        position: fixed;
+        bottom: 0!important;
+        left: 0;
+        right: 0;
+        z-index: 5;
+        padding: 5px 0;
+        font-size: 1.5rem;
+        background: #19643F;
+    }
+    .action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        font-weight: bold;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        transform: translateY(-8px);
+        box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+    }
+    .action-btn:hover {
+        background: #F9B023;
+    }
+    .input-rows {
+        gap: 0;
+    }
+    .last-input {
+        margin-bottom: 20px;
+    }
+    .container-foto-btns {
+        min-width: 100%;
+        max-width: 100%;
+        align-items: center;
+        justify-content: center;
+        border-right: none;
+    }
+    .griglia {
+        gap: 0;
+    }
+    .foto-loading {
+        padding-top:20px;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+}
+
+@media (min-width: 901px) {
+    #section-aggiungi {
+        margin-bottom: 80px;
+    }
+    .products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 28px;
+    }
+    .mode-selector {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 5;
+        padding: 16px 24px;
+        font-size: 1.5rem;
+        max-width: 10px;
+    }
+    .action-btn {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        transform: translateY(-8px);
+        box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+    }
+    .action-btn:hover {
+        background: #F9B023;
+    }
+    .form-actions-btns {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        margin-top: 30px;
+        font-weight: bold;
+        align-items: center;
+        justify-content: center;
+        padding-top: 20px;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    #form-prodotto {
+        padding: 0 30px;
+    }
+    .input-rows {
+        gap: 24px;
+    }
+    .container-foto-btns {
+        min-width: 300px;
+        max-width: 400px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding-right: 30px;
+        align-items: center;
+        justify-content: center;
+        border-right: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    .griglia {
+        gap: 40px;
+    }
+    .foto-loading {
+        padding-top:0;
+        padding-bottom: 0;
+        margin-bottom: 0;
+        border-bottom: none;
+    }
+}
+
+@media (min-width: 1201px) {
+    .products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 32px;
+    }
+    .mode-selector {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 5;
+        padding: 16px 24px;
+        font-size: 1.5rem;
+        max-width: 10px;
+    }
+    #form-prodotto {
+        padding: 0 40px;
+    }
+    .form-actions-btns {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        margin-top: 30px;
+        font-weight: bold;
+        align-items: center;
+        justify-content: center;
+        padding-top: 20px;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
     }
 }

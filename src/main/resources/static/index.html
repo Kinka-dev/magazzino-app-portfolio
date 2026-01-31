@@ -34,95 +34,133 @@
             <!-- Pulsanti switch modalità (come prima) -->
             <div class="mode-selector">
                 <button id="btn-visita-main" class="mode-btn mode-btn-c active" title="Visita Magazzino">
-                    <span class="text">Visita Magazzino</span>
+<!--                    <span class="text">Visita Magazzino</span>-->
                     <span class="icon-mobile">👀</span>
                 </button>
                 <button id="btn-aggiungi-main" class="mode-btn mode-btn-c" title="Aggiungi Prodotto">
-                    <span class="text">Aggiungi Prodotto</span>
+<!--                    <span class="text">Aggiungi Prodotto</span>-->
                     <span class="icon-mobile">+</span>
                 </button>
-                <button onclick="startScanning()" id="btn-barcode" class="mode-btn barcode-btn btn-icon" title="Scansiona barcode">𝄃𝄂𝄂𝄃</button>
-                <button id="btn-filtri-main" class="mode-btn filter-btn btn-icon" title="Cerca / Filtri">
-                    <span class="filter-icon">🔍</span>
+                <button id="btn-filtri-main" class="mode-btn mode-btn-c filter-btn" title="Cerca / Filtri">
+<!--                    <span class="text">Cerca/Filtra</span>-->
+                    <span class="icon-mobile filter-icon">🔍</span>
                 </button>
-                <button id="btn-torna-home" class="mode-btn torna-home-btn btn-icon" title="Home">🏠</button>
-                <div id="reader"></div>
+                <button id="btn-torna-home" class="mode-btn mode-btn-c torna-home-btn" title="Home">
+<!--                    <span class="text">Home</span>-->
+                    <span class="icon-mobile">🏠</span>
+                </button>
             </div>
-
             <!-- Sezione Visita Magazzino (cards) -->
             <section id="section-visita" class="mode-section">
-                <h2>Magazzino</h2>
+                <h2 style="color: white">Magazzino</h2>
                 <div class="products-grid" id="products-container"></div>
             </section>
 
             <!-- Sezione Aggiungi Prodotto -->
-            <section id="section-aggiungi" class="mode-section" style="display: none;">
-                <h2>Aggiungi Nuovo Prodotto</h2>
+            <section id="section-aggiungi" class="mode-section" style="display: none; background: white; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); max-width: 1280px; margin: 16px auto;">
                 <form id="form-prodotto">
-                    <label for="nome">Nome </label>
-                    <div class="form-btns">
-                        <input type="text" id="nome" required>
-                        <button type="button" class="mic-btn" id="mic-nome" title="Dettatura vocale">🎤</button>
-                    </div>
-                    <label for="quantita">Quantità </label>
-                    <div class="form-btns">
-                        <input type="number" id="quantita" min="0" required>
-                        <button type="button" class="mic-btn" id="mic-quantita" title="Dettatura vocale">🎤</button>
-                    </div>
+                    <h2 style="text-align: center; margin-bottom: 32px; color: #2b2a2a; font-size: 1.8rem;">Aggiungi Nuovo Prodotto</h2>
 
-                    <label for="prezzo">Prezzo € </label>
-                    <div class="form-btns">
-                        <input type="number" id="prezzo" step="0.01" min="0">
-                        <button type="button" class="mic-btn" id="mic-prezzo" title="Dettatura vocale">🎤</button>
-                    </div>
+                    <!-- Riga 2: Griglia 2 colonne -->
+                    <div class="griglia" style="display: flex; flex-wrap: wrap; justify-content: space-around;">
 
-                    <label for="categoria">Categoria </label>
-                    <div class="form-btns">
-                        <input type="text" id="categoria">
-                        <button type="button" class="mic-btn" id="mic-categoria" title="Dettatura vocale">🎤</button>
-                    </div>
+                        <!-- Colonna sinistra: Foto + AI -->
+                        <div class="container-foto-btns">
+                            <h3 style="text-align: center; margin-bottom: 12px; font-size: 1.2rem;">Foto prodotto</h3>
+                            <div id="preview-foto" style="position: relative; border: 2px dashed #ccc; border-radius: 8px; padding: 16px; background: #f8f9fa; min-height: 200px; display: flex; align-items: center; justify-content: center;">
+                                <p id="preview-p" style="color: #555; margin: 0;">Nessuna foto selezionata</p>
+                                <img id="img-preview" alt="Anteprima foto" style="display:none; border-radius: 8px;">
+                                <canvas id="canvas-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
+                            </div>
+                            <div class="foto-loading" style="text-align: center; display: flex; flex-direction: column;">
+                                <input type="file" id="foto" accept="image/*" style="display: none;">
+                                <label for="foto" style="display: inline-block; background: #1a73e8; color: white; padding: 16px 24px; border-radius: 8px; cursor: pointer; font-size: 1.2rem; font-weight: bold; margin-bottom: 0!important;">
+                                    📷 Scegli una foto
+                                </label>
+                                <button id="btn-vision" type="button" style="margin-top: 12px; background: #1a73e8; color: white; padding: 16px 24px; font-size: 1.2rem; display: block;">
+                                    ✨ Riconosci con AI
+                                </button>
+                            </div>
+                        </div>
 
-                    <label for="descrizione">Descrizione </label>
-                    <div class="form-btns">
-                        <textarea id="descrizione" rows="3"></textarea>
-                        <button type="button" class="mic-btn" id="mic-descrizione" title="Dettatura vocale">🎤</button>
-                    </div>
+                        <!-- Colonna destra: Input con label sopra -->
+                        <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
+                            <!-- Riga orizzontale: Nome + Categoria -->
+                            <div class="input-rows" style="display: flex; flex-wrap: wrap;">
+                                <div style="flex: 1; min-width: 200px;">
+                                    <label for="nome" style="display: block; font-weight: 600; margin-bottom: 4px;">Nome *</label>
+                                    <div style="display: flex; align-items: center;">
+                                        <input type="text" id="nome" required style="flex: 1; padding: 10px; border: 1px solid #ccc;">
+                                        <button type="button" class="mic-btn" id="mic-nome" title="Dettatura vocale">🎤</button>
+                                    </div>
+                                </div>
 
-                    <label for="posizione">Posizione </label>
-                    <div class="form-btns">
-                        <input type="text" id="posizione">
-                        <button type="button" class="mic-btn" id="mic-posizione" title="Dettatura vocale">🎤</button>
-                    </div>
+                                <div style="flex: 1; min-width: 200px;">
+                                    <label for="categoria" style="display: block; font-weight: 600; margin-bottom: 4px;">Categoria</label>
+                                    <div style="display: flex; align-items: center;">
+                                        <input type="text" id="categoria" style="flex: 1; padding: 10px; border: 1px solid #ccc;">
+                                        <button type="button" class="mic-btn" id="mic-categoria" title="Dettatura vocale">🎤</button>
+                                    </div>
+                                </div>
+                            </div>
 
-                    <label for="linkFornitore">Link fornitore / Amazon </label>
-                    <div class="form-btns">
-                        <input type="url" id="linkFornitore" placeholder="https://www.amazon.it/..."
-                               pattern="https?://.*" title="Inserisci un URL valido (http/https)">
-                        <button type="button" class="mic-btn" id="mic-linkFornitore" title="Dettatura vocale">🎤</button>
-                    </div>
+                            <!-- Riga orizzontale: Quantità + Prezzo -->
+                            <div class="input-rows" style="display: flex; flex-wrap: wrap;">
+                                <div style="flex: 1; min-width: 200px;">
+                                    <label for="quantita" style="display: block; font-weight: 600; margin-bottom: 4px;">Quantità</label>
+                                    <div style="display: flex; align-items: center;">
+                                        <input type="number" id="quantita" min="0" style="flex: 1; padding: 10px; border: 1px solid #ccc;">
+                                        <button type="button" class="mic-btn" id="mic-quantita" title="Dettatura vocale">🎤</button>
+                                    </div>
+                                </div>
 
-                    <label for="foto">Foto prodotto (opzionale) </label>
-                    <div class="custom-file-upload">
-                        <input type="file" id="foto" accept="image/*" />
-                        <label for="foto" class="custom-file-label">
-                            <span class="file-icon">📷</span> Scegli una foto
-                        </label>
-                    </div>
+                                <div style="flex: 1; min-width: 200px;">
+                                    <label for="prezzo" style="display: block; font-weight: 600; margin-bottom: 4px;">Prezzo €</label>
+                                    <div style="display: flex; align-items: center;">
+                                        <input type="number" id="prezzo" step="0.01" min="0" style="flex: 1; padding: 10px; border: 1px solid #ccc;">
+                                        <button type="button" class="mic-btn" id="mic-prezzo" title="Dettatura vocale" >🎤</button>
+                                    </div>
+                                </div>
+                            </div>
 
-                    <div id="preview-foto" class="preview-container">
-                        <p id="file-status">Nessuna foto selezionata</p>
-                        <img id="img-preview" alt="Anteprima foto" style="display:none;">
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="sub-btn">Salva e Visita Magazzino</button>
-                        <button type="button" id="save-and-new-btn">Salva e Aggiungi Nuovo</button>
+                            <!-- Riga orizzontale: Posizione + Link -->
+                            <div class="input-rows"  style="display: flex; flex-wrap: wrap;">
+                                <div style="flex: 1; min-width: 200px;">
+                                    <label for="posizione" style="display: block; font-weight: 600; margin-bottom: 4px;">Posizione</label>
+                                    <div style="display: flex; align-items: center;">
+                                        <input type="text" id="posizione" style="flex: 1; padding: 10px; border: 1px solid #ccc;">
+                                        <button type="button" class="mic-btn" id="mic-posizione" title="Dettatura vocale">🎤</button>
+                                    </div>
+                                </div>
+
+                                <div style="flex: 1; min-width: 200px;">
+                                    <label for="linkFornitore" style="display: block; font-weight: 600; margin-bottom: 4px;">Link fornitore / Amazon</label>
+                                    <div style="display: flex; align-items: center;">
+                                        <input type="url" id="linkFornitore" placeholder="https://www.amazon.it/..." style="flex: 1; padding: 10px; border: 1px solid #ccc;">
+                                        <button type="button" class="mic-btn" id="mic-linkFornitore" title="Dettatura vocale">🎤</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Descrizione (da solo) -->
+                            <div class="input-rows">
+                                <label for="descrizione" style="display: block; font-weight: 600; margin-bottom: 4px;">Descrizione</label>
+                                <div class="last-input" style="display: flex; align-items: flex-start;">
+                                    <textarea id="descrizione" rows="3" style="flex: 1; padding: 10px; border: 1px solid #ccc;"></textarea>
+                                    <button type="button" class="mic-btn" id="mic-descrizione" title="Dettatura vocale">🎤</button>
+                                </div>
+                            </div>
+                            <div class="form-actions-btns">
+                                <button type="submit" class="sub-btn action-btn" style="background: #1a73e8; color: white; padding: 16px 32px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Salva e <br>Visita Magazzino</button>
+                                <button type="button" id="save-and-new-btn" class="action-btn" style="background: #3498db; color: white; padding: 16px 32px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Salva e <br>Aggiungi Nuovo</button>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </section>
-
             <!-- Sezione Cerca (filtri) -->
-            <section id="section-cerca" class="mode-section" style="display: none;">
-                <h2>Cerca in Magazzino</h2>
+            <section id="section-cerca" class="mode-section" style="display: none; padding: 20px">
+                <h2 style="color: white">Cerca in Magazzino</h2>
                 <div class="filtri-container">
                     <input type="text" id="filtro-testo" placeholder="Cerca per nome, categoria o posizione...">
                     <select id="filtro-categoria">
@@ -143,7 +181,6 @@
         <div id="toast-error" class="toast toast-error">
             Errore durante l'operazione!
         </div>
-    <script src="script.js"></script>
-        <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+        <script src="script.js"></script>
     </body>
 </html>

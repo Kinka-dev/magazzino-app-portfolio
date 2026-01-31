@@ -396,7 +396,7 @@ async function applicaFiltri() {
         filteredContainer.innerHTML = '';
 
         if (filtrate.length === 0) {
-            filteredContainer.innerHTML = '<p style="text-align:center; padding:40px; color:#777; font-size:1.2rem;">Nessun prodotto corrisponde ai filtri.</p>';
+            showErrorToast("Nessun prodotto corrisponde ai filtri")
             return;
         }
 
@@ -517,38 +517,7 @@ document.getElementById('mic-descrizione').addEventListener('click', () => start
 document.getElementById('mic-posizione').addEventListener('click', () => startDictation('posizione'));
 document.getElementById('mic-linkFornitore').addEventListener('click', () => startDictation('linkFornitore'));
 
-// SCANSIONE BARCODE
-function startScanning() {
-    Html5Qrcode.getCameras().then(cameras => {
-        if (cameras.length === 0) {
-            alert('Nessuna telecamera trovata. Collega una webcam o usa il telefono.');
-            return;
-        }
-        const cameraId = cameras[0].id; // usa la prima disponibile
-        const html5QrCode = new Html5Qrcode("reader");
-        html5QrCode.start(
-            cameraId,
-            {
-                fps: 10,    // frame per secondo
-                qrbox: 250  // dimensione della finestra di scansione
-            },
-            qrCodeMessage => {
-                console.log(`QR Code rilevato: ${qrCodeMessage}`);
-                // Qui puoi gestire il risultato
-            },
-            errorMessage => {
-                // messaggi di errore di scansione
-                console.log(`Errore di scansione: ${errorMessage}`);
-            }
-        ).catch(err => {
-            console.error('Errore avvio scansione:', err);
-            alert('Impossibile avviare la scansione. Assicurati che la telecamera sia disponibile e che i permessi siano attivi.');
-        });
-    }).catch(err => {
-        console.error('Errore nel recupero delle telecamere:', err);
-        alert('Errore nel recupero delle telecamere: ' + err);
-    });
-}
+
 
 // Funzione per aggiungere https:// se manca
 function addHttpsPrefix(input) {
@@ -626,3 +595,85 @@ function showErrorToast(message = "Errore durante l'operazione!") {
         toast.classList.remove('show');
     }, 4000); // errore visibile un po' più a lungo
 }
+
+// Token Hugging Face (crealo su huggingface.co/settings/tokens se non funziona)
+const HF_TOKEN = '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';  // ← METTI IL TUO TOKEN REALE QUI
+
+// Modelli con INFERENCE API ATTIVA (testati oggi)
+const MODEL_PCB = 'foduucom/electronic-components-detection';  // Elettronica, componenti
+const MODEL_TOOL = 'keremberke/yolov8n-tool-detection';  // Tool/meccanica (attivo)
+
+// Pulsante "Riconosci componenti"
+document.getElementById('btn-vision')?.addEventListener('click', async () => {
+    const base64 = imgPreview?.src;
+    if (!base64 || imgPreview.style.display === 'none') {
+        showErrorToast("Carica prima una foto!");
+        return;
+    }
+
+    await detectWithHuggingFace(base64);
+});
+
+// Funzione principale
+async function detectWithHuggingFace(base64Image) {
+    try {
+        showSuccessToast("Riconoscimento in corso...");
+
+        const imageData = base64Image.split(',')[1];
+
+        const [pcbResponse, toolResponse] = await Promise.all([
+            fetch('http://localhost:8080/api/prodotti/proxy-hf', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model: MODEL_PCB, inputs: imageData })
+            }),
+            fetch('http://localhost:8080/api/prodotti/proxy-hf', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model: MODEL_TOOL, inputs: imageData })
+            })
+        ]);
+
+        if (!pcbResponse.ok || !toolResponse.ok) {
+            const pcbError = await pcbResponse.text();
+            const toolError = await toolResponse.text();
+            console.error(`PCB error: ${pcbError}, Tool error: ${toolError}`);
+            showErrorToast("Errore in uno dei modelli (controlla console)");
+            return;
+        }
+
+        const pcbData = await pcbResponse.json();
+        const toolData = await toolResponse.json();
+
+        console.log("Risposta PCB:", pcbData);
+        console.log("Risposta Tool:", toolData);
+
+        const allDetections = [...(Array.isArray(pcbData) ? pcbData : []), ...(Array.isArray(toolData) ? toolData : [])];
+
+        if (allDetections.length > 0) {
+            drawBoundingBoxes(allDetections);
+
+            let labels = allDetections.map(d => d.label || 'Sconosciuto').join(', ');
+            let topLabel = allDetections[0]?.label || 'Componenti rilevati';
+
+            document.getElementById('nome').value = topLabel;
+            document.getElementById('categoria').value = 'Elettronica / Meccanica / Ferramenta';
+            document.getElementById('descrizione').value = `Rilevati: ${labels} (totale: ${allDetections.length})`;
+
+            showSuccessToast(`Rilevati ${allDetections.length} componenti!`);
+        } else {
+            showErrorToast("Nessun componente riconosciuto");
+        }
+    } catch (error) {
+        console.error("Errore:", error);
+        showErrorToast("Errore riconoscimento");
+    }
+}
+
+
+
+
+
+
+
+
