@@ -518,19 +518,16 @@ main,
     border-collapse: collapse;
     background: white;
 }
-
+#table-container-visita th, #table-container-cerca th {
+    background: #f0f0f0;
+    font-weight: bold;
+    }
 #table-container-visita th, #table-container-cerca th,
 #table-container-visita td, #table-container-cerca td {
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid #eee;
 }
-
-#table-container-visita th, #table-container-cerca th {
-    background: #f0f0f0;
-    font-weight: bold;
-}
-
 @media (min-width: 601px) {
     .mode-btn-c {
         min-width: 50px;
@@ -668,7 +665,7 @@ main,
     }
     .mode-selector {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         gap: 10px;
         position: fixed;
         left: 0;
@@ -735,6 +732,9 @@ main,
         justify-content: end;
         margin-left: auto;
         gap: 0;
+    }
+    #section-visita {
+        padding: 20px 40px;
     }
 }
 
