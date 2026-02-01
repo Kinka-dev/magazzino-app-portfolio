@@ -244,8 +244,8 @@ async function aggiornaCards() {
                         ${prod.linkFornitore && prod.linkFornitore !== '-' ? `<a href="${prod.linkFornitore}" target="_blank" rel="noopener noreferrer" class="card-link">🔗 Vai al fornitore / Amazon</a>` : ''}
                     </div>
                     <div class="card-actions">
-                        <button class="card-btn edit-btn" data-id="${prod.id}">Modifica</button>
-                        <button class="card-btn delete-btn" data-id="${prod.id}">Rimuovi</button>
+                        <button class="card-btn green-btn edit-btn" data-id="${prod.id}">Modifica</button>
+                        <button class="card-btn red-btn delete-btn" data-id="${prod.id}">Rimuovi</button>
                     </div>
                 `;
                 cardsDiv.appendChild(card);
@@ -289,9 +289,9 @@ async function aggiornaCards() {
                     <td style="padding: 12px; border-bottom: 1px solid #eee;">${prod.categoria}</td>
                     <td style="padding: 12px; border-bottom: 1px solid #eee;">${prod.posizione}</td>
                     <td style="padding: 12px; border-bottom: 1px solid #eee;">${prod.descrizione || '-'}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #eee; display: flex; flex-direction: row; gap:5px;">
-                        <button title="Modifica" class="card-btn edit-btn" data-id="${prod.id}">✏️</button>
-                        <button title="Elimina" class="card-btn delete-btn" data-id="${prod.id}">❌</button>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee; display: flex; flex-direction: row; gap: 5px;">
+                        <button title="Modifica" class="card-btn green-btn edit-btn" style="margin-top: 0;" data-id="${prod.id}">✏️</button>
+                        <button title="Elimina" class="card-btn red-btn delete-btn" style="margin-top: 0;" data-id="${prod.id}">❌</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -307,65 +307,64 @@ async function aggiornaCards() {
 }
 
 async function cambiaQuantita(id, delta) {
+    console.log("[DEBUG] cambiaQuantita chiamata - ID:", id, "delta:", delta);
     try {
         const getResp = await fetch(`${API_BASE_URL}/api/prodotti/${id}`);
         if (!getResp.ok) throw new Error("Prodotto non trovato");
         const prod = await getResp.json();
-
         const nuovaQuantita = Math.max(0, prod.quantita + delta);
-
         const updated = { ...prod, quantita: nuovaQuantita };
-
         const putResp = await fetch(`${API_BASE_URL}/api/prodotti/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updated)
         });
-
         if (putResp.ok) {
-            if (document.getElementById('section-cerca').style.display === 'block') {
-                await applicaFiltri();
-            } else {
-                await aggiornaCards();
-            }
-        }
-    } catch (error) {
-        alert("Impossibile aggiornare quantità");
-    }
-}
-
-async function rimuoviProdotto(id) {
-    if (!confirm("Vuoi rimuovere questo prodotto?")) return;
-
-    try {
-        const response = await fetch(`http://192.168.0.170:8080/api/prodotti/${id}`, {
-            method: 'DELETE'
-        });
-
-        if (response.ok) {
-            showSuccessToast("Prodotto rimosso correttamente!");
-            // <--- QUI aggiungi il controllo
+            console.log("[DEBUG] Quantità aggiornata con successo per ID:", id);
             if (document.getElementById('section-cerca').style.display === 'block') {
                 await applicaFiltri();
             } else {
                 await aggiornaCards();
             }
         } else {
+            console.error("[DEBUG] Errore PUT quantità:", await putResp.text());
+        }
+    } catch (error) {
+        console.error("[DEBUG] Errore in cambiaQuantita:", error);
+        alert("Impossibile aggiornare quantità");
+    }
+}
+
+async function rimuoviProdotto(id) {
+    console.log("[DEBUG] rimuoviProdotto chiamata - ID:", id);
+    if (!confirm("Vuoi rimuovere questo prodotto?")) return;
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/prodotti/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+            console.log("[DEBUG] Prodotto rimosso con successo ID:", id);
+            showSuccessToast("Prodotto rimosso correttamente!");
+            if (document.getElementById('section-cerca').style.display === 'block') {
+                await applicaFiltri();
+            } else {
+                await aggiornaCards();
+            }
+        } else {
+            console.error("[DEBUG] Errore DELETE:", await response.text());
             showErrorToast("Errore rimozione");
         }
     } catch (error) {
+        console.error("[DEBUG] Errore in rimuoviProdotto:", error);
         showErrorToast("Errore connessione durante la rimozione");
     }
 }
 
 async function modificaProdotto(id) {
+    console.log("[DEBUG] modificaProdotto chiamata - ID:", id);
     try {
         const response = await fetch(`${API_BASE_URL}/api/prodotti/${id}`);
         if (!response.ok) throw new Error("Prodotto non trovato");
         const prod = await response.json();
-
         switchMode(btnAggiungiMain, sectionAggiungi);
-
         document.getElementById('nome').value = prod.nome || '';
         document.getElementById('quantita').value = prod.quantita || 0;
         document.getElementById('prezzo').value = prod.prezzo || 0;
@@ -373,8 +372,6 @@ async function modificaProdotto(id) {
         document.getElementById('descrizione').value = prod.descrizione || '';
         document.getElementById('posizione').value = prod.posizione || '';
         document.getElementById('linkFornitore').value = prod.linkFornitore || '';
-
-        // Anteprima foto dal backend (base64)
         if (prod.fotoBase64) {
             imgPreview.src = prod.fotoBase64;
             imgPreview.style.display = 'block';
@@ -384,11 +381,11 @@ async function modificaProdotto(id) {
             imgPreview.style.display = 'none';
             if (previewP) previewP.style.display = 'block';
         }
-
         submitBtn.textContent = 'Salva Modifiche';
         submitBtn.dataset.editId = id;
+        console.log("[DEBUG] Form modifica caricato per ID:", id);
     } catch (error) {
-        console.error("Errore caricamento modifica:", error);
+        console.error("[DEBUG] Errore in modificaProdotto:", error);
         alert("Impossibile caricare il prodotto per la modifica");
     }
 }
@@ -481,8 +478,8 @@ async function applicaFiltri() {
                         ${prod.linkFornitore && prod.linkFornitore !== '-' ? `<a href="${prod.linkFornitore}" target="_blank" rel="noopener noreferrer" class="card-link">🔗 Vai al fornitore / Amazon</a>` : ''}
                     </div>
                     <div class="card-actions">
-                        <button class="card-btn edit-btn" data-id="${prod.id}">Modifica</button>
-                        <button class="card-btn delete-btn" data-id="${prod.id}">Rimuovi</button>
+                        <button class="card-btn green-btn edit-btn" data-id="${prod.id}">Modifica</button>
+                        <button class="card-btn red-btn delete-btn" data-id="${prod.id}">Rimuovi</button>
                     </div>
                 `;
                 cardsContainer.appendChild(card);
@@ -517,14 +514,13 @@ async function applicaFiltri() {
                     <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">
                         ${prod.fotoBase64 ? `<img src="${prod.fotoBase64}" style="width:60px; height:60px; object-fit:cover; border-radius:4px;">` : 'No foto'}
                     </td>
-                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${prod.nome}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${prod.quantita}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${prod.nome}</td>${prod.quantita}</td>
                     <td style="padding: 12px; border-bottom: 1px solid #eee;">${prod.prezzo.toFixed(2)} €</td>
                     <td style="padding: 12px; border-bottom: 1px solid #eee;">${prod.categoria}</td>
                     <td style="padding: 12px; border-bottom: 1px solid #eee;">${prod.posizione}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #eee; display: flex; flex-direction: row; gap:5px;">
-                        <button style="margin-top: 0;" title="Modifica" class="card-btn edit-btn" data-id="${prod.id}">✏️</button>
-                        <button style="margin-top: 0;" title="Elimina" class="card-btn delete-btn" data-id="${prod.id}">❌</button>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee; display: flex; flex-direction: row; gap: 5px;">
+                        <button title="Modifica" class="card-btn green-btn edit-btn" style="margin-top: 0;" data-id="${prod.id}">✏️</button>
+                        <button title="Elimina" class="card-btn red-btn delete-btn" style="margin-top: 0;" data-id="${prod.id}">❌</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -568,6 +564,7 @@ document.querySelectorAll('#cards-container-cerca, #table-container-cerca').forE
     });
 });
 
+// Listener pulsanti filtri (come prima)
 document.getElementById('btn-applica-filtro')?.addEventListener('click', async (e) => {
     e.preventDefault();
     await applicaFiltri();
@@ -576,7 +573,7 @@ document.getElementById('btn-applica-filtro')?.addEventListener('click', async (
 document.getElementById('btn-reset-filtro')?.addEventListener('click', () => {
     document.getElementById('filtro-testo').value = '';
     document.getElementById('filtro-categoria').value = '';
-    applicaFiltri(); // questo mostrerà il placeholder
+    applicaFiltri(); // ricarica con filtri vuoti
     console.log("Reset eseguito - campi svuotati");
 });
 
@@ -836,7 +833,8 @@ window.addEventListener('load', () => {
     highlightViewButton('cerca', viewCerca || 'cards');
 });
 
-// Listener click per pulsanti in MAGAZZINO (cards + tabella)
+
+// Listener per pulsanti in MAGAZZINO (Visita) – cards + tabella
 const visitaContainers = [
     document.getElementById('cards-container-visita'),
     document.getElementById('table-container-visita')
@@ -850,33 +848,55 @@ visitaContainers.forEach(container => {
 
             const id = btn.dataset.id;
             if (!id) {
-                console.warn("Nessun data-id sul pulsante in MAGAZZINO:", btn);
+                console.warn("Nessun data-id in MAGAZZINO:", btn);
                 return;
             }
 
-            console.log("CLICK DETECTATO in MAGAZZINO:", btn.className, "ID:", id); // DEBUG
+            console.log("CLICK in MAGAZZINO:", btn.className, "ID:", id); // debug
 
             if (btn.classList.contains('qty-btn')) {
                 const delta = parseInt(btn.dataset.delta);
                 if (!isNaN(delta)) {
-                    console.log("Cambiata quantità:", delta, "per ID:", id);
                     await cambiaQuantita(id, delta);
                 }
             }
 
             if (btn.classList.contains('edit-btn')) {
-                console.log("Modifica cliccato per ID:", id);
                 await modificaProdotto(id);
             }
 
             if (btn.classList.contains('delete-btn')) {
-                console.log("Rimuovi cliccato per ID:", id);
                 await rimuoviProdotto(id);
             }
         });
-    } else {
-        console.warn("Contenitore MAGAZZINO non trovato:", container?.id);
     }
 });
 
+// Listener per pulsanti in CERCA – cards + tabella
+const cercaContainers = [
+    document.getElementById('cards-container-cerca'),
+    document.getElementById('table-container-cerca')
+];
+
+cercaContainers.forEach(container => {
+    if (container) {
+        container.addEventListener('click', async function(e) {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+
+            const id = btn.dataset.id;
+            if (!id) return;
+
+            console.log("CLICK in CERCA:", btn.className, "ID:", id); // debug
+
+            if (btn.classList.contains('qty-btn')) {
+                const delta = parseInt(btn.dataset.delta);
+                if (!isNaN(delta)) await cambiaQuantita(id, delta);
+            }
+
+            if (btn.classList.contains('edit-btn')) await modificaProdotto(id);
+            if (btn.classList.contains('delete-btn')) await rimuoviProdotto(id);
+        });
+    }
+});
 

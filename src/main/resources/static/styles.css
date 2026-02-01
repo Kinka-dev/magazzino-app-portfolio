@@ -202,24 +202,24 @@ button:hover {
     text-align: center;
 }
 
-.edit-btn {
+.green-btn {
     background: #3e9e1d !important;
     color: white!important;
     font-weight: bold!important;
 }
 
-.edit-btn:hover {
-    background: #28730e !important;
+.green-btn:hover {
+    background: #21670c !important;
     transform: translateY(-2px)!important;
 }
 
-.delete-btn {
+.red-btn {
     background: #c80200 !important;
     font-weight: bold!important;
 }
 
-.delete-btn:hover {
-    background: #930e00 !important;
+.red-btn:hover {
+    background: #710403 !important;
     transform: translateY(-2px)!important;
 }
 
@@ -453,7 +453,7 @@ main,
     border-radius: 0 6px 6px 0;
 }
 .mic-btn.listening {
-    background: #e74c3c;
+    background: #c80200;
     animation: pulse 1.5s infinite;
 }
 
@@ -488,7 +488,7 @@ main,
 }
 
 .toast-error {
-    background: #e74c3c;
+    background: #c80200;
 }
 
 .mode-btn-c {
@@ -548,11 +548,28 @@ main,
     }
 }
 @media (max-width: 600px) {
+    .filtri-container {
+        padding: 20px 0;
+    }
+    .section-div {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+    }
+    .section-div h2 {
+        color: white;
+        margin: 0;
+        padding-bottom: 0;
+    }
     #section-visita {
         margin-bottom: 80px;
+        padding: 0;
     }
     #section-aggiungi {
         margin-bottom: 180px;
+        padding: 20px;
     }
     .products-grid {
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -564,9 +581,6 @@ main,
         gap: 0;
         border-top: 1px solid rgba(0, 0, 0, 0.1);
         width: 100%;
-    }
-    h2 {
-        margin-bottom: 10px;
     }
     .mode-selector {
         display: flex;
@@ -619,9 +633,33 @@ main,
         margin-bottom: 20px;
         border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     }
+    .view-toggle-group {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: unset;
+    }
+    #filtro-categoria {
+        width: 100%;
+    }
 }
 
 @media (min-width: 901px) {
+    .section-div {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 16px;
+        width: 100%;
+        position: relative;
+    }
+    .section-div h2 {
+        color: white;
+        margin: 0;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
     #section-aggiungi {
         margin-bottom: 80px;
     }
@@ -692,6 +730,13 @@ main,
         margin-bottom: 0;
         border-bottom: none;
     }
+    .view-toggle-group {
+        display: flex;
+        align-items: center;
+        justify-content: end;
+        margin-left: auto;
+        gap: 0;
+    }
 }
 
 @media (min-width: 1201px) {
@@ -726,12 +771,6 @@ main,
         border-top: 1px solid rgba(0, 0, 0, 0.1);
     }
 }
-.view-toggle-group {
-    display: flex;
-    align-items: center;
-    justify-content: end;
-}
-
 .view-btn {
     background: #f0f0f0;
     border: 1px solid #ccc;
