@@ -63,7 +63,7 @@ public class ProdottoController {
                 return ResponseEntity.badRequest().body("Missing model or inputs");
             }
 
-            String hfToken = "";  // ← TOKEN VALIDO
+            String hfToken = "hf-token-here";  // ← TOKEN VALIDO
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + hfToken);
