@@ -638,6 +638,9 @@ main,
     #filtro-categoria {
         width: 100%;
     }
+    main {
+        margin-bottom: 50px;
+    }
 }
 
 @media (min-width: 901px) {
@@ -655,9 +658,6 @@ main,
         position: absolute;
         left: 50%;
         transform: translateX(-50%);
-    }
-    #section-aggiungi {
-        margin-bottom: 80px;
     }
     .products-grid {
         grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));

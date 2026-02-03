@@ -16,7 +16,7 @@ const homeScreen = document.getElementById('home-screen');
 const btnVisitaMain = document.querySelector('#main-content #btn-visita-main') || document.querySelector('#main-content .mode-btn.active');
 const btnAggiungiMain = document.querySelector('#main-content #btn-aggiungi-main') || document.querySelector('#main-content .mode-btn:not(.active)');
 const filteredContainer = document.getElementById('filtered-container')
-const API_BASE_URL = 'http://192.168.0.170:8080';
+const API_BASE_URL = window.location.origin.replace(/:\d+$/, '') + ':8080';
 
 btnVisitaHome.addEventListener('click', () => {
     homeScreen.style.display = 'none';
@@ -71,11 +71,6 @@ function switchMode(activeBtn, activeSection) {
     if (btnTornaHome) {
         btnTornaHome.style.display = 'inline-block';
     }
-
-    // Refresh se visita
-    if (activeSection.id === 'section-visita') {
-        aggiornaCards();
-    }
 }
 
 form.addEventListener('submit', async function(e) {
@@ -114,7 +109,7 @@ form.addEventListener('submit', async function(e) {
     activeBtn.textContent = 'Salvataggio...';
 
     try {
-        let url = 'http://192.168.0.170:8080/api/prodotti';
+        let url = `${API_BASE_URL}/api/prodotti`;
         let method = 'POST';
 
         const editId = submitBtn.dataset.editId;
@@ -202,7 +197,6 @@ let viewVisita = 'cards';
 async function aggiornaCards() {
     const cardsDiv = document.getElementById('cards-container-visita');
     const tableDiv = document.getElementById('table-container-visita');
-
     if (!cardsDiv || !tableDiv) {
         console.error("Contenitori non trovati in aggiornaCards()");
         console.log("cards-container-visita esiste?", !!document.getElementById('cards-container-visita'));
@@ -717,7 +711,6 @@ document.getElementById('btn-vision')?.addEventListener('click', async () => {
     await detectWithHuggingFace(base64);
 });
 
-// Funzione principale
 async function detectWithHuggingFace(base64Image) {
     try {
         showSuccessToast("Riconoscimento in corso...");
@@ -725,12 +718,12 @@ async function detectWithHuggingFace(base64Image) {
         const imageData = base64Image.split(',')[1];
 
         const [pcbResponse, toolResponse] = await Promise.all([
-            fetch('http://localhost:8080/api/prodotti/proxy-hf', {
+            fetch(`${API_BASE_URL}/api/prodotti/proxy-hf`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ model: MODEL_PCB, inputs: imageData })
             }),
-            fetch('http://localhost:8080/api/prodotti/proxy-hf', {
+            fetch(`${API_BASE_URL}/api/prodotti/proxy-hf`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ model: MODEL_TOOL, inputs: imageData })
@@ -818,7 +811,6 @@ document.getElementById('btn-view-table-cerca')?.addEventListener('click', () =>
     highlightViewButton('cerca', 'table');
 });
 
-// Funzione helper per evidenziare pulsante attivo
 function highlightViewButton(section, view) {
     const prefix = section === 'visita' ? 'visita' : 'cerca';
     document.getElementById(`btn-view-cards-${prefix}`)?.classList.remove('active');
@@ -827,14 +819,11 @@ function highlightViewButton(section, view) {
     document.getElementById(`btn-view-${view}-${prefix}`)?.classList.add('active');
 }
 
-// Forza stato iniziale corretto all’avvio
 window.addEventListener('load', () => {
     highlightViewButton('visita', viewVisita || 'cards');
     highlightViewButton('cerca', viewCerca || 'cards');
 });
 
-
-// Listener per pulsanti in MAGAZZINO (Visita) – cards + tabella
 const visitaContainers = [
     document.getElementById('cards-container-visita'),
     document.getElementById('table-container-visita')
@@ -872,7 +861,6 @@ visitaContainers.forEach(container => {
     }
 });
 
-// Listener per pulsanti in CERCA – cards + tabella
 const cercaContainers = [
     document.getElementById('cards-container-cerca'),
     document.getElementById('table-container-cerca')
